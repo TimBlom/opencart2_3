@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+* Modified in 1.0.3 to:
+ - Fix the bug that order lang is overwritten by MyParcelNL lang
+-->
 <modification>
     <name>MyParcel NL</name>
-    <version>1.0.1</version>
+    <version>1.0.3</version>
     <code>MyParcelNL</code>
     <author>MyParcel NL</author>
     <link>http://www.myparcelnl.com</link>
@@ -22,7 +26,7 @@
             ]]></add>
         </operation>
 
-		<operation><!-- yes -->
+		<operation>
             <search regex="true"><![CDATA[/<td(.*)\$order\['date_modified'](.*)<\/td>/]]></search>
             <add><![CDATA[
                 <td$1$order['date_modified']$2</td>
@@ -225,6 +229,13 @@
             <search><![CDATA[$results = $this->model_sale_order->getOrders($filter_data);]]></search>
             <add position="after"><![CDATA[
                 MyParcel()->shipment->shipment_helper->syncShipmentForOrders($results);
+            ]]></add>
+        </operation>
+
+        <operation>
+            <search><![CDATA[$data['heading_title'] = $this->language->get('heading_title');]]></search>
+            <add position="before"><![CDATA[
+                $this->load->language('sale/order');
             ]]></add>
         </operation>
     </file>

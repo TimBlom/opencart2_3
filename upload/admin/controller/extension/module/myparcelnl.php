@@ -2,6 +2,8 @@
 require_once DIR_SYSTEM . 'myparcelnl/class_myparcel.php';
 class ControllerExtensionModuleMyparcelnl extends Controller
 {
+    protected $version = '1.0.3';
+
     private $error = array();
 
     /**
@@ -343,77 +345,79 @@ class ControllerExtensionModuleMyparcelnl extends Controller
             MyParcel()->notice->add($this->language->get('error_amount'), 'warning');
         }
 
-        /*validate cut off time fomat hh:mm*/
-        if (!empty($this->request->post['myparcelnl_fields_checkout']['cut_off_time']) && !MyParcel()->helper->validate_cutoff_time($this->request->post['myparcelnl_fields_checkout']['cut_off_time'])) {
-            MyParcel()->notice->add($this->language->get('error_cut_off_time'), 'warning');
-        }
-
-        if (!empty($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']) && !is_numeric($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']) || intval($this->request->post['myparcelnl_fields_checkout']['delivery_days_window'])<0) {
-            MyParcel()->notice->add($this->language->get('error_delivery_days_window'), 'warning');
-        }
-
-        /*if ( (isset($this->request->post['myparcelnl_fields_export']['empty_parcel_weight']) && !is_numeric($this->request->post['myparcelnl_fields_export']['empty_parcel_weight']) ) || (!empty($this->request->post['myparcelnl_fields_export']['empty_parcel_weight']) && intval($this->request->post['myparcelnl_fields_export']['empty_parcel_weight'])<0) ) {
-            MyParcel()->notice->add($this->language->get('error_empty_parcel_weight'), 'warning');
-        }*/
-
-        if (($this->request->post['myparcelnl_fields_checkout']['only_recipient_enabled']==1) && (!is_numeric($this->request->post['myparcelnl_fields_checkout']['only_recipient_fee'])) ) {
-            MyParcel()->notice->add($this->language->get('error_only_recipient_fee'), 'warning');
-        }
-
-        if (($this->request->post['myparcelnl_fields_checkout']['signed_enabled']==1) && (!is_numeric($this->request->post['myparcelnl_fields_checkout']['signed_fee'])) ) {
-            MyParcel()->notice->add($this->language->get('error_signed_fee'), 'warning');
-        }
-
-        if (($this->request->post['myparcelnl_fields_checkout']['night_enabled']==1) && (!is_numeric($this->request->post['myparcelnl_fields_checkout']['night_fee'])) ) {
-            MyParcel()->notice->add($this->language->get('error_night_fee'), 'warning');
-        }
-
-        if (($this->request->post['myparcelnl_fields_checkout']['morning_enabled']==1) && (!is_numeric($this->request->post['myparcelnl_fields_checkout']['morning_fee'])) ) {
-            MyParcel()->notice->add($this->language->get('error_morning_fee'), 'warning');
-        }
-
-        if (($this->request->post['myparcelnl_fields_checkout']['pickup_enabled']==1) && (!is_numeric($this->request->post['myparcelnl_fields_checkout']['pickup_fee'])) ) {
-            MyParcel()->notice->add($this->language->get('error_pickup_fee'), 'warning');
-        }
-
-        if (($this->request->post['myparcelnl_fields_checkout']['pickup_express_enabled']==1) && (!is_numeric($this->request->post['myparcelnl_fields_checkout']['pickup_express_fee'])) ) {
-            MyParcel()->notice->add($this->language->get('error_pickup_express_fee'), 'warning');
-        }
-
-        if (($this->request->post['myparcelnl_fields_checkout']['mailbox_enabled']==1) ) {
-            if (empty($this->request->post['myparcelnl_fields_checkout']['mailbox_title'])) {
-                MyParcel()->notice->add($this->language->get('error_mailbox_title_empty'), 'warning');
+        if (!empty($this->request->post['myparcelnl_fields_checkout']['enable_delivery'])) {
+            /*validate cut off time fomat hh:mm*/
+            if (!empty($this->request->post['myparcelnl_fields_checkout']['cut_off_time']) && !MyParcel()->helper->validate_cutoff_time($this->request->post['myparcelnl_fields_checkout']['cut_off_time'])) {
+                MyParcel()->notice->add($this->language->get('error_cut_off_time'), 'warning');
             }
 
-            if (
-                empty($this->request->post['myparcelnl_fields_checkout']['mailbox_fee']) ||
-                !is_numeric($this->request->post['myparcelnl_fields_checkout']['mailbox_fee'])
-            ) {
-
-                MyParcel()->notice->add($this->language->get('error_mailbox_fee_empty'), 'warning');
+            if (!empty($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']) && !is_numeric($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']) || intval($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']) < 0) {
+                MyParcel()->notice->add($this->language->get('error_delivery_days_window'), 'warning');
             }
 
-            if (
-                empty($this->request->post['myparcelnl_fields_checkout']['mailbox_weight']) ||
-                !is_numeric($this->request->post['myparcelnl_fields_checkout']['mailbox_fee'])
-            ) {
+            /*if ( (isset($this->request->post['myparcelnl_fields_export']['empty_parcel_weight']) && !is_numeric($this->request->post['myparcelnl_fields_export']['empty_parcel_weight']) ) || (!empty($this->request->post['myparcelnl_fields_export']['empty_parcel_weight']) && intval($this->request->post['myparcelnl_fields_export']['empty_parcel_weight'])<0) ) {
+                MyParcel()->notice->add($this->language->get('error_empty_parcel_weight'), 'warning');
+            }*/
 
-                MyParcel()->notice->add($this->language->get('error_mailbox_weight_empty'), 'warning');
+            if (($this->request->post['myparcelnl_fields_checkout']['only_recipient_enabled'] == 1) && (!is_numeric($this->request->post['myparcelnl_fields_checkout']['only_recipient_fee']))) {
+                MyParcel()->notice->add($this->language->get('error_only_recipient_fee'), 'warning');
             }
-        }
 
-        if (!empty($this->request->post['myparcelnl_fields_checkout']['enable_delivery']) && !empty($this->request->post['myparcelnl_fields_checkout']['dropoff_delay'])) {
-            if (!is_numeric($this->request->post['myparcelnl_fields_checkout']['dropoff_delay'])) {
-                MyParcel()->notice->add($this->language->get('error_dropoff_delay'), 'warning');
-            } else {
-                if ($this->request->post['myparcelnl_fields_checkout']['dropoff_delay'] < 0 || $this->request->post['myparcelnl_fields_checkout']['dropoff_delay'] > 14) {
-                    MyParcel()->notice->add($this->language->get('error_dropoff_delay_wrong_range'), 'warning');
+            if (($this->request->post['myparcelnl_fields_checkout']['signed_enabled'] == 1) && (!is_numeric($this->request->post['myparcelnl_fields_checkout']['signed_fee']))) {
+                MyParcel()->notice->add($this->language->get('error_signed_fee'), 'warning');
+            }
+
+            if (($this->request->post['myparcelnl_fields_checkout']['night_enabled'] == 1) && (!is_numeric($this->request->post['myparcelnl_fields_checkout']['night_fee']))) {
+                MyParcel()->notice->add($this->language->get('error_night_fee'), 'warning');
+            }
+
+            if (($this->request->post['myparcelnl_fields_checkout']['morning_enabled'] == 1) && (!is_numeric($this->request->post['myparcelnl_fields_checkout']['morning_fee']))) {
+                MyParcel()->notice->add($this->language->get('error_morning_fee'), 'warning');
+            }
+
+            if (($this->request->post['myparcelnl_fields_checkout']['pickup_enabled'] == 1) && (!is_numeric($this->request->post['myparcelnl_fields_checkout']['pickup_fee']))) {
+                MyParcel()->notice->add($this->language->get('error_pickup_fee'), 'warning');
+            }
+
+            if (($this->request->post['myparcelnl_fields_checkout']['pickup_express_enabled'] == 1) && (!is_numeric($this->request->post['myparcelnl_fields_checkout']['pickup_express_fee']))) {
+                MyParcel()->notice->add($this->language->get('error_pickup_express_fee'), 'warning');
+            }
+
+            if (($this->request->post['myparcelnl_fields_checkout']['mailbox_enabled'] == 1)) {
+                if (empty($this->request->post['myparcelnl_fields_checkout']['mailbox_title'])) {
+                    MyParcel()->notice->add($this->language->get('error_mailbox_title_empty'), 'warning');
+                }
+
+                if (
+                    empty($this->request->post['myparcelnl_fields_checkout']['mailbox_fee']) ||
+                    !is_numeric($this->request->post['myparcelnl_fields_checkout']['mailbox_fee'])
+                ) {
+
+                    MyParcel()->notice->add($this->language->get('error_mailbox_fee_empty'), 'warning');
+                }
+
+                if (
+                    empty($this->request->post['myparcelnl_fields_checkout']['mailbox_weight']) ||
+                    !is_numeric($this->request->post['myparcelnl_fields_checkout']['mailbox_fee'])
+                ) {
+
+                    MyParcel()->notice->add($this->language->get('error_mailbox_weight_empty'), 'warning');
                 }
             }
-        }
 
-        if (empty($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']) || (empty($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']) && !is_numeric($this->request->post['myparcelnl_fields_checkout']['delivery_days_window'])) ) {
-            MyParcel()->notice->add($this->language->get('error_delivery_windows'), 'warning');
+            if (!empty($this->request->post['myparcelnl_fields_checkout']['dropoff_delay'])) {
+                if (!is_numeric($this->request->post['myparcelnl_fields_checkout']['dropoff_delay'])) {
+                    MyParcel()->notice->add($this->language->get('error_dropoff_delay'), 'warning');
+                } else {
+                    if ($this->request->post['myparcelnl_fields_checkout']['dropoff_delay'] < 0 || $this->request->post['myparcelnl_fields_checkout']['dropoff_delay'] > 14) {
+                        MyParcel()->notice->add($this->language->get('error_dropoff_delay_wrong_range'), 'warning');
+                    }
+                }
+            }
+
+            if (empty($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']) || (empty($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']) && !is_numeric($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']))) {
+                MyParcel()->notice->add($this->language->get('error_delivery_windows'), 'warning');
+            }
         }
     }
 }
