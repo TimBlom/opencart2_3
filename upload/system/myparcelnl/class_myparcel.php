@@ -41,6 +41,7 @@ class MyParcel
             $this->log = require_once (dirname(__FILE__) . '/includes/class_myparcel_log.php');
             $this->settings = require_once (dirname(__FILE__) . '/includes/class_myparcel_setting.php');
             $this->api = require_once (dirname(__FILE__) . '/includes/class_myparcel_api.php');
+            $this->url = require_once (dirname(__FILE__) . '/includes/class_myparcel_url.php');
         }
     }
 

@@ -2,7 +2,7 @@
 require_once DIR_SYSTEM . 'myparcelnl/class_myparcel.php';
 class ControllerExtensionModuleMyparcelnl extends Controller
 {
-    protected $version = '1.0.3';
+    protected $version = '1.0.4';
 
     private $error = array();
 
