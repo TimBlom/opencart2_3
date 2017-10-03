@@ -650,7 +650,7 @@
                                     <div class="form-group">
                                         <label class="text-left col-sm-2 control-label" for="input-title" ><?php echo $entry_tab_3_label_delivery_days_window; ?></label>
                                         <div class="col-sm-10 col-md-6 col-lg-3">
-                                            <input type="" name="myparcelnl_fields_checkout[delivery_days_window]" value="<?php echo !empty($myparcelnl_fields_checkout['delivery_days_window'])?$myparcelnl_fields_checkout['delivery_days_window']:''; ?>" class="form-control"/>
+                                            <input type="" name="myparcelnl_fields_checkout[delivery_days_window]" value="<?php echo (!empty($myparcelnl_fields_checkout['delivery_days_window']) || $myparcelnl_fields_checkout['delivery_days_window'] == '0')?$myparcelnl_fields_checkout['delivery_days_window']:''; ?>" class="form-control"/>
                                             <?php echo $entry_tab_3_textbox_delivery_days_window; ?>
                                         </div>
                                     </div>
@@ -698,7 +698,7 @@
                                                 <label>
                                                     <?php
                                                     $checked = (isset($myparcelnl_fields_checkout['auto_google_fonts']) && ($myparcelnl_fields_checkout['auto_google_fonts']==1))?'checked="checked"':'';
-                                                ?>
+                                                    ?>
                                                     <input type="hidden" name="myparcelnl_fields_checkout[auto_google_fonts]" value="0" />
                                                     <input id="checkout_auto_google_fronts" <?php echo $checked; ?> type="checkbox" value="1" name="myparcelnl_fields_checkout[auto_google_fonts]" />
                                                 </label>

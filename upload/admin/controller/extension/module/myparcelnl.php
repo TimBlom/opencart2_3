@@ -2,7 +2,7 @@
 require_once DIR_SYSTEM . 'myparcelnl/class_myparcel.php';
 class ControllerExtensionModuleMyparcelnl extends Controller
 {
-    protected $version = '1.0.4';
+    protected $version = '1.0.6';
 
     private $error = array();
 
@@ -351,9 +351,9 @@ class ControllerExtensionModuleMyparcelnl extends Controller
                 MyParcel()->notice->add($this->language->get('error_cut_off_time'), 'warning');
             }
 
-            if (!empty($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']) && !is_numeric($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']) || intval($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']) < 0) {
+            /*if (!empty($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']) && !is_numeric($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']) || intval($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']) < 0) {
                 MyParcel()->notice->add($this->language->get('error_delivery_days_window'), 'warning');
-            }
+            }*/
 
             /*if ( (isset($this->request->post['myparcelnl_fields_export']['empty_parcel_weight']) && !is_numeric($this->request->post['myparcelnl_fields_export']['empty_parcel_weight']) ) || (!empty($this->request->post['myparcelnl_fields_export']['empty_parcel_weight']) && intval($this->request->post['myparcelnl_fields_export']['empty_parcel_weight'])<0) ) {
                 MyParcel()->notice->add($this->language->get('error_empty_parcel_weight'), 'warning');
@@ -415,9 +415,9 @@ class ControllerExtensionModuleMyparcelnl extends Controller
                 }
             }
 
-            if (empty($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']) || (empty($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']) && !is_numeric($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']))) {
+           /* if ((trim($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']) == '') || (!empty($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']) && !is_numeric($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']))) {
                 MyParcel()->notice->add($this->language->get('error_delivery_windows'), 'warning');
-            }
+            }*/
         }
     }
 }
