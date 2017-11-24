@@ -192,7 +192,7 @@ var MYPARCEL_CHECKOUT = MYPARCEL_CHECKOUT || {};
 
     MYPARCEL_CHECKOUT.helper = {
         updateiFrameAddress: function (address_data) {
-
+            console.log(address_data);
             var shipping_postcode = address_data.postcode;
             var shipping_house_number = address_data.number;
             var shipping_street_name = address_data.street;
@@ -201,6 +201,7 @@ var MYPARCEL_CHECKOUT = MYPARCEL_CHECKOUT || {};
                 window.mypa.settings.postal_code = shipping_postcode.replace(/\s+/g, '');
                 window.mypa.settings.number = shipping_house_number;
                 window.mypa.settings.street = shipping_street_name;
+                window.mypa.settings.cc = address_data.iso_code_2;
             }
 
             if (address_data.iso_code_2) {
@@ -236,9 +237,11 @@ var MYPARCEL_CHECKOUT = MYPARCEL_CHECKOUT || {};
                 success: function(res) {
                     if (res.status == 'success') {
                         var address_data = res.address_data;
+                        console.log(address_data);
                         window.mypa.settings.street = address_data.street;
                         window.mypa.settings.number = address_data.number;
                         window.mypa.settings.postal_code = postcode;
+                        window.mypa.settings.cc = address_data.iso_code_2;
                         iframeWindow.mypa.settings = window.mypa.settings;
                         if (res.iso_code_2) {
                             window.myparcel_country = res.iso_code_2;
@@ -254,9 +257,14 @@ var MYPARCEL_CHECKOUT = MYPARCEL_CHECKOUT || {};
 
         checkCountry: function() {
             if (window.myparcel_country != 'NL') {
-                $('#delivery-options-wrapper').hide();
-                $('#shipping-existing select').prop('disabled', false);
-                return false;
+                if (window.myparcel_country == 'BE' && window.enable_belgium) {
+                    $('#delivery-options-wrapper').show();
+                    return true;
+                } else {
+                    $('#delivery-options-wrapper').hide();
+                    $('#shipping-existing select').prop('disabled', false);
+                    return false;
+                }
             } else {
                 $('#delivery-options-wrapper').show();
                 return true;
@@ -326,12 +334,10 @@ var MYPARCEL_CHECKOUT = MYPARCEL_CHECKOUT || {};
             iframeWindow.mypa.settings = window.mypa.settings;
 
             postJson = function(event){
-                el = document.getElementById('event-log');
-                el.innerHTML = el.innerHTML + $(event.currentTarget).val() + "<br>";
+
             };
             postCheck = function(event){
-                el = document.getElementById('event-log');
-                el.innerHTML = el.innerHTML + $(event.currentTarget).prop('checked') + "<br>";
+
             };
             $(this.contentDocument.getElementById('mypa-input')).on('change', postJson);
             $(this.contentDocument.getElementById('mypa-signed')).on('change', postCheck);

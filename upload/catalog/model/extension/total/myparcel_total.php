@@ -50,7 +50,17 @@ class ModelExtensionTotalMyparcelTotal extends Model
 
 						$total['total'] += $total_price;
 					}
-				}
+				} else {
+				    $session_data = $this->session->data;
+                    if (!empty($session_data['shipping_method']['code']) && $session_data['shipping_method']['code'] == 'myparcel_shipping.myparcel_shipping') {
+                        $total['totals'][] = array(
+                            'code' => 'myparcel_total',
+                            'title' => $this->config->get('myparcel_shipping_title'),
+                            'value' => $this->config->get('myparcel_shipping_cost'),
+                            'sort_order' => $this->config->get('shipping_sort_order')
+                        );
+                    }
+                }
 			}
 		}
 	}

@@ -463,6 +463,33 @@
                                     </div>
 
                                     <div class="form-group">
+                                        <label class="text-left col-sm-2 control-label" for="input-title" ><?php echo $entry_tab_3_label_standard_delivery; ?></label>
+                                        <div class="col-sm-10 col-md-6 col-lg-6">
+                                            <div class="checkbox">
+                                                <label>
+                                                    <?php
+                                                        $checked = (isset($myparcelnl_fields_checkout['default_enabled']) && ($myparcelnl_fields_checkout['default_enabled']==1))?'checked="checked"':'';
+                                                    ?>
+                                                    <input type="hidden" name="myparcelnl_fields_checkout[default_enabled]" value="0" />
+                                                    <input id="checkbox_standard_delivery" class="checkbox_delivery_options" <?php echo $checked; ?> type="checkbox" value="1" name="myparcelnl_fields_checkout[default_enabled]" />
+                                                </label>
+
+                                            </div>
+                                            <table id="table_standard_delivery" class="v-center <?php echo (isset($myparcelnl_fields_checkout['default_enabled']) && ($myparcelnl_fields_checkout['default_enabled']==1))?'show':'hidden';?>">
+                                                <tr>
+                                                    <td><?php echo $entry_tab_3_label_additional_fee; ?>: </td>
+                                                    <td>
+                                                        <div class="input-group">
+                                                            <span class="input-group-addon">&euro;</span>
+                                                            <input class="form-control" type="text" name="myparcelnl_fields_checkout[default_fee]" value="<?php echo isset($myparcelnl_fields_checkout['default_fee'])?$myparcelnl_fields_checkout['default_fee']:''; ?>">
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
                                         <label class="text-left col-sm-2 control-label" for="input-title" ><?php echo $entry_tab_3_label_evening_delivery; ?></label>
                                         <div class="col-sm-10 col-md-6 col-lg-6">
                                             <div class="checkbox">
@@ -614,6 +641,43 @@
                                         </div>
                                     </div>
 
+                                    <!-- BELGIUM PRICES SETTINGS -->
+                                    <div class="form-group">
+                                        <label class="text-left col-sm-2 control-label" for="input-title" ><?php echo $entry_tab_3_label_belgium_settings; ?></label>
+                                        <div class="col-sm-10 col-md-6 col-lg-6">
+                                            <div class="checkbox">
+                                                <label>
+                                                    <?php
+                                                        $checked = (isset($myparcelnl_fields_checkout['belgium_enabled']) && ($myparcelnl_fields_checkout['belgium_enabled']==1))?'checked="checked"':'';
+                                                    ?>
+                                                    <input type="hidden" name="myparcelnl_fields_checkout[belgium_enabled]" value="0" />
+                                                    <input id="checkbox_mailbox" class="checkbox_delivery_options" <?php echo $checked; ?> type="checkbox" value="1" name="myparcelnl_fields_checkout[belgium_enabled]" />
+                                                </label>
+
+                                            </div>
+                                            <table id="table_mailbox" class="<?php echo (isset($myparcelnl_fields_checkout['belgium_enabled']) && ($myparcelnl_fields_checkout['belgium_enabled']==1))?'show':'hidden';?>">
+                                                <tr>
+                                                    <td><?php echo $entry_tab_3_label_belgium_default_fee; ?>:</td>
+                                                    <td>
+                                                        <div class="input-group">
+                                                            <span class="input-group-addon">&euro;</span>
+                                                            <input class="form-control" type="text" name="myparcelnl_fields_checkout[belgium_default_fee]" value="<?php echo isset($myparcelnl_fields_checkout['belgium_default_fee'])?$myparcelnl_fields_checkout['belgium_default_fee']:''; ?>">
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td><?php echo $entry_tab_3_label_belgium_pickup_fee; ?>:</td>
+                                                    <td>
+                                                        <div class="input-group">
+                                                            <span class="input-group-addon">&euro;</span>
+                                                            <input class="form-control" type="text" name="myparcelnl_fields_checkout[belgium_pickup_fee]" value="<?php echo isset($myparcelnl_fields_checkout['belgium_pickup_fee'])?$myparcelnl_fields_checkout['belgium_pickup_fee']:''; ?>">
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </div>
+
                                     <!-- END  MAILBOX SETTINGS -->
 
                                     <h2><?php echo $entry_tab_3_title_shipment_processing_parameters; ?></h2>
@@ -634,9 +698,37 @@
                                     <div class="form-group">
                                         <label class="text-left col-sm-2 control-label" for="input-title" ><?php echo $entry_tab_3_label_cut_off_time; ?></label>
                                         <div class="col-sm-10 col-md-6 col-lg-3">
-                                            <input type="text" name="myparcelnl_fields_checkout[cut_off_time]" value="<?php echo isset($myparcelnl_fields_checkout['cut_off_time'])?$myparcelnl_fields_checkout['cut_off_time']:''; ?>" class="form-control"/>
+                                            <div class="checkbox">
+                                                <label>
+                                                    <?php
+                                                        $cut_off_weekdays_checked = (isset($myparcelnl_fields_checkout['cut_off_weekday']) && ($myparcelnl_fields_checkout['cut_off_weekday']==1))?'checked="checked"':'';
+                                                    ?>
+                                                    <input type="hidden" name="myparcelnl_fields_checkout[cut_off_weekday]" value="0" />
+                                                    <input id="checkout_cut_off_weekday" <?php echo $cut_off_weekdays_checked; ?> type="checkbox" value="1" name="myparcelnl_fields_checkout[cut_off_weekday]" />
+                                                </label>
+                                                <?php echo $entry_tab_3_label_cut_off_weekday; ?>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <div id="cut_off_time_all_wrapper" style="<?php echo (!empty($cut_off_weekdays_checked) ? 'display:none;' : '' ) ?>" class="col-sm-12 col-md-12 col-lg-12">
+                                                    <input type="text" name="myparcelnl_fields_checkout[cut_off_time]" value="<?php echo isset($myparcelnl_fields_checkout['cut_off_time'])?$myparcelnl_fields_checkout['cut_off_time']:''; ?>" class="form-control"/>
+                                                </div>
+                                                <div id="cut_off_time_weekdays_wrapper" style="<?php echo (!empty($cut_off_weekdays_checked) ? '' : 'display:none;' ) ?>" class="col-sm-12 col-md-12 col-lg-12">
+                                                    <table>
+                                                        <?php foreach ($days_of_the_week as $key => $day_of_week) : ?>
+                                                        <tr>
+                                                            <td style="width:30%;"><?php echo $day_of_week ?></td>
+                                                            <td>
+                                                                <input type="text" name="myparcelnl_fields_checkout[cut_off_time_weekdays][<?php echo $key ?>]" value="<?php echo isset($myparcelnl_fields_checkout['cut_off_time_weekdays'][$key])?$myparcelnl_fields_checkout['cut_off_time_weekdays'][$key] :''; ?>" class="form-control"/>
+                                                            </td>
+                                                        </tr>
+                                                        <tr><td colspan="2"><hr/></td></tr>
+                                                        <?php endforeach; ?>
+                                                    </table>
+                                                </div>
+                                            </div>
                                             <?php echo $entry_tab_3_textbox_cut_off_time; ?>
-                                        </div>    
+                                        </div>
                                     </div>
 
                                     <div class="form-group">
@@ -650,7 +742,7 @@
                                     <div class="form-group">
                                         <label class="text-left col-sm-2 control-label" for="input-title" ><?php echo $entry_tab_3_label_delivery_days_window; ?></label>
                                         <div class="col-sm-10 col-md-6 col-lg-3">
-                                            <input type="" name="myparcelnl_fields_checkout[delivery_days_window]" value="<?php echo (!empty($myparcelnl_fields_checkout['delivery_days_window']) || $myparcelnl_fields_checkout['delivery_days_window'] == '0')?$myparcelnl_fields_checkout['delivery_days_window']:''; ?>" class="form-control"/>
+                                            <input type="" name="myparcelnl_fields_checkout[delivery_days_window]" value="<?php echo !empty($myparcelnl_fields_checkout['delivery_days_window'])?$myparcelnl_fields_checkout['delivery_days_window']:''; ?>" class="form-control"/>
                                             <?php echo $entry_tab_3_textbox_delivery_days_window; ?>
                                         </div>
                                     </div>
@@ -698,7 +790,7 @@
                                                 <label>
                                                     <?php
                                                     $checked = (isset($myparcelnl_fields_checkout['auto_google_fonts']) && ($myparcelnl_fields_checkout['auto_google_fonts']==1))?'checked="checked"':'';
-                                                    ?>
+                                                ?>
                                                     <input type="hidden" name="myparcelnl_fields_checkout[auto_google_fonts]" value="0" />
                                                     <input id="checkout_auto_google_fronts" <?php echo $checked; ?> type="checkbox" value="1" name="myparcelnl_fields_checkout[auto_google_fonts]" />
                                                 </label>

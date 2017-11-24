@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-* Modified in 1.0.3 to:
+* Modified in 1.0.4 to:
  - Fix the bug that order lang is overwritten by MyParcelNL lang
 -->
 <modification>
     <name>MyParcel NL</name>
-    <version>1.0.6</version>
+    <version>1.0.9</version>
     <code>MyParcelNL</code>
     <author>MyParcel NL</author>
     <link>http://www.myparcelnl.com</link>

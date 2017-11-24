@@ -15,26 +15,21 @@
             body{
                 word-wrap: break-word;
             }
-
             input[name=mypa-delivery-type],
             input[name=mypa-delivery-time],
             input[name=mypa-pickup-option]{
                 display: none;
             }
-
             #mypa-slider{
                 width: 204%;
                 height: 100%;
             }
-
             .mypa-slider-pos-0{
                 left:0;
             }
-
             .mypa-slider-pos-1{
                 left: -49%;
             }
-
             .mypa-tab-container{
                 vertical-align: top;
                 transition: left 0.5s ease-out;
@@ -44,7 +39,6 @@
                 position:relative;
                 overflow:hidden;
             }
-
             #mypa-delivery-options-container{
                 position: relative;
                 word-wrap: initial;
@@ -55,18 +49,15 @@
                 width: 100%;
                 height: 100%;
             }
-
             .mypa-delivery-header, .mypa-tab{
                 color: #fff;
             }
-
             #mypa-tabs{
                 position: relative;
                 display: block;
                 width: 100%;
                 transition: left 0.3s ease-out 0.1s;
             }
-
             .mypa-tab{
                 transition: background-color 0.4s;
                 font-size: 12px;
@@ -77,34 +68,27 @@
                 width: 80px;
                 min-height:34px;
             }
-
             .mypa-date{
                 display:none;
             }
-
             .mypa-date:checked+label , .mypa-tab:hover{
                 background: #01bbc5;
             }
-
             .mypa-content-lg {
                 transition: max-height 0.4s ease-out 0s;
                 overflow:hidden;
             }
-
             .mypa-content-lg > div:first-child{
                 border-top: solid 1px #D2D2D2;
             }
-
             .mypa-tab + .mypa-tab{
                 margin-left: 4px;
             }
-
             .mypa-delivery-header{
                 padding: 17px;
                 font-size: 20px;
                 background: #01bbc5;
             }
-
             .mypa-checkmark {
                 cursor: pointer;
                 position: relative;
@@ -117,7 +101,6 @@
                 -webkit-transform: rotate(45deg); /* Chrome, Safari, Opera */
                 transform: rotate(45deg);
             }
-
             .mypa-circle {
                 transition: background-color 0.4s;
                 position: relative;
@@ -129,11 +112,9 @@
                 top:0;
                 z-index:1;
             }
-
             .mypa-circle:hover, label.mypa-row-subitem:hover .mypa-circle{
                 background-color: #ff8c00;
             }
-
             input:checked + label.mypa-checkmark div.mypa-circle,
             input[name=mypa-delivery-type]:checked + label div.mypa-main div.mypa-circle,
             input[name=mypa-pickup-option]:checked + label div.mypa-main div.mypa-circle
@@ -141,19 +122,15 @@
                 background-color: #ff8c00;
                 z-index:0;
             }
-
             input[name=mypa-delivery-type] ~ div.mypa-content-lg{
                 max-height: 0px;
             }
-
             input:disabled ~ div.mypa-switch-container label.mypa-onoffswitch-label span.mypa-onoffswitch-switch{
                 background: #c7c7c7;
             }
-
             input[name=mypa-delivery-type]:checked ~ div.mypa-content-lg{
                 max-height: 240px;
             }
-
             .mypa-checkmark-stem {
                 position: absolute;
                 width: 10%;
@@ -162,7 +139,6 @@
                 left: 55%;
                 top: 18%;
             }
-
             .mypa-checkmark-kick {
                 position: absolute;
                 width: 32%;
@@ -171,66 +147,53 @@
                 left: 32%;
                 top: 64%;
             }
-
             .mypa-row-lg{
                 border-bottom: 1px solid #D2D2D2;
             }
-
             .mypa-row-title{
                 display: inline-block;
                 padding: 9px 15px 16px 15px;
                 width: 80%
             }
-
             .mypa-row-subitem{
                 margin: 2px 0 10px 40px;
                 display: block;
             }
-
-
             #mypa-delivery-options{
             }
-
             .mypa-onoffswitch {
                 top: 7px;
                 position: relative; width: 45px;
                 -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
             }
-
             .mypa-onoffswitch-checkbox {
                 display: none;
             }
-
             .mypa-onoffswitch-label {
                 display: block; overflow: hidden; cursor: pointer;
                 border: 2px solid #C7C7C7; border-radius: 20px;
             }
-
             .mypa-onoffswitch-inner {
                 display: block; width: 200%; margin-left: -100%;
                 transition: margin 0.3s ease-in 0s;
                 margin-left: 0;
             }
-
             .mypa-onoffswitch-inner:before, .mypa-onoffswitch-inner:after {
                 display: block; float: left; width: 50%; height: 20px; padding: 0; line-height: 20px;
                 font-size: 14px; color: white; font-weight: bold;
                 box-sizing: border-box;
             }
-
             .mypa-onoffswitch-inner:before {
                 content: "N";
                 padding-left: 7px;
                 background-color: #DE0D0D; color: #FFFFFF;
             }
-
             .mypa-onoffswitch-inner:after {
                 content: "J";
                 padding-right: 7px;
                 background-color: #39D12E; color: #FFFFFF;
                 text-align: right;
             }
-
             .mypa-onoffswitch-switch {
                 display: block; width: 20px; margin: 0px;
                 background: #FFFFFF;
@@ -239,28 +202,22 @@
                 border: 2px solid #C7C7C7; border-radius: 20px;
                 transition: all 0.3s ease-in 0s;
             }
-
             .mypa-onoffswitch-checkbox:checked + div.mypa-switch-container .mypa-onoffswitch .mypa-onoffswitch-label .mypa-onoffswitch-inner {
                 margin-left: -41px;
             }
-
             .mypa-onoffswitch-checkbox:checked + div.mypa-switch-container .mypa-onoffswitch .mypa-onoffswitch-label .mypa-onoffswitch-switch {
                 right: 21px;
             }
-
             .mypa-switch-container{
                 display: inline-block
             }
-
             input:checked ~ .mypa-highlight,
             input:checked ~ label.mypa-row-title span.mypa-highlight{
                 color: #FF8C00
             }
-
             #mypa-back-arrow{
                 cursor: pointer;
             }
-
             .mypa-arrow-left::before {
                 position: relative;
                 content: "";
@@ -272,7 +229,6 @@
                 transform: rotate(45deg);
                 margin-right: 0.5em;
             }
-
             .mypa-arrow-right::before {
                 position: relative;
                 content: "";
@@ -284,57 +240,46 @@
                 transform: rotate(45deg);
                 margin-right: 0.5em;
             }
-
             .mypa-arrow-clickable:hover::before{
                 border-left: 0.2em solid #ff8c00;
                 border-bottom: 0.2em solid #ff8c00;
             }
-
             .mypa-arrow-clickable:hover{
                 color: #ff8c00;
             }
-
             #mypa-date-slider-left::before, #mypa-date-slider-right::before{
                 border-color: #A0A0A0;
             }
-
             #mypa-date-slider-left:hover::before, #mypa-date-slider-right:hover::before{
                 border-color: #FF8C00;
             }
-
             .mypa-slider-disabled#mypa-date-slider-left::before,
             .mypa-slider-disabled#mypa-date-slider-right::before{
                 border-color: #EAEAEA;
                 cursor: not-allowed;
             }
-
             .mypa-date-slider-button {
                 position: absolute;
                 display: inline-block;
                 top: 13px;
                 font-size: 22px;
             }
-
             #mypa-date-slider-left{
                 left: 19px;
             }
-
             #mypa-date-slider-right{
                 right: 5px;
             }
-
             #mypa-tabs-container{
                 height: 44px;
                 margin-left: 45px;
                 margin-right: 41px;
                 overflow: hidden;
             }
-
             #mypa-location-container{
                 overflow: scroll;
                 max-height: 100%
             }
-
             .mypa-price {
                 position: relative;
                 top: 5px;
@@ -347,28 +292,19 @@
                 font-weight: 800;
                 font-size: 17px;
             }
-
             .mypa-combination-price{
                 padding: 2px 0 2px 0;
             }
-
             .mypa-combination-price.mypa-combination-price-active{
             }
-
             .mypa-combination-price > .mypa-price{
                 margin: 21px 30px 0 0;
             }
-
             input:checked ~ .mypa-price,
             input:checked ~ span span.mypa-price,
             .mypa-price-active{
                 background: #ff8c00
             }
-
-            #mypa-mailbox-options-title {
-                width: 100%;
-            }
-
             .mypa-info{
                 display: inline-block;
                 box-sizing: border-box;
@@ -385,7 +321,6 @@
                 margin: 4px;
                 border: 2px solid;
             }
-
             .mypa-info::before{
                 position: absolute;
                 left: 50%;
@@ -400,7 +335,6 @@
                 box-shadow: inset 0 0 0 32px;
                 border-radius: 2px;
             }
-
             .mypa-info::after{
                 pointer-events: none;
                 content: '';
@@ -418,7 +352,6 @@
                 position: absolute;
                 left: 50%;
             }
-
             .mypa-opening-hours{
                 display: none;
                 position: absolute;
@@ -430,24 +363,19 @@
                 -moz-box-shadow:  1px 1px 10px #B9B9B9;
                 box-shadow:  1px 1px 10px #B9B9B9;
             }
-
             div.afhalen-right:hover + .mypa-opening-hours{
                 display: initial;
             }
-
             .mypa-day-of-the-week{
                 display: inline-block;
                 width: 30px;
             }
-
             .mypa-opening-hours-list{
                 display: inline-block;
             }
-
             .mypa-hidden{
                 display: none;
             }
-
             .mypa-overlay{
                 position:absolute;
                 height:100%;
@@ -455,7 +383,6 @@
                 z-index:100;
                 background: rgba(226, 226, 226, 0.75);
             }
-
             #mypa-no-options{
                 color: white;
                 position: relative;
@@ -468,53 +395,43 @@
                 display: block;
                 font-size: 20px;
             }
-
             .mypa-address{
                 font-style: italic;
                 color: darkorange;
                 cursor: pointer;
             }
-
             .mypa-address:hover{
                 color:#b36200;
                 text-decoration:underline;
             }
-
             .mypa-inline-block{
                 display: inline-block;
             }
-
             .afhalen-right{
                 float: right;
                 margin: 9px 4px 0 0;
             }
-
             .afhalen-check{
                 float: left;
             }
-
             .afhalen-tekst{
                 margin: 0px 38px 10px 57px;
                 padding-top: 18px;
             }
-
             .afhalen-row{
                 min-height: 46px;
             }
-
             .edit-stem{
                 background-color: darkorange;
                 width:3px;
                 height:15px;
                 border-radius: 3px 3px 0 0px;
             }
-
             .edit-stem-top{
                 border-bottom: 1px solid darkorange;
                 height: 5px;
                 width: 100%;
             }
-
             .edit-tip > div{
                 width: 0;
                 height: 0;
@@ -522,7 +439,6 @@
                 border-right: 2px solid transparent;
                 border-top: 3px solid darkorange;
             }
-
             .edit-tip > div:before{
                 position:relative;
                 display: block;
@@ -535,7 +451,6 @@
                 border-right: 2px solid transparent;
                 border-top: 2px solid white;
             }
-
             .edit{
                 display:inline-block;
                 position: relative;
@@ -609,14 +524,14 @@
             <div id="mypa-slider">
                 <!-- First frame -->
                 <div id="mypa-delivery-type-selection" class="mypa-tab-container mypa-slider-pos-0">
-                    <?php $display_tabs = (MyParcel()->settings->checkout->delivery_days_window > 0) ? true : false; ?>
-                    <div id="mypa-date-slider-left" style="<?php echo $display_tabs ? '' : 'display: none;' ?>" class="mypa-arrow-left mypa-back-arrow mypa-date-slider-button mypa-slider-disabled"></div>
-                    <div id="mypa-date-slider-right" style="display:<?php echo $display_tabs ? '' : 'display: none;' ?>" class="mypa-arrow-right myapa-next-arrow mypa-date-slider-button mypa-slider-disabled"></div>
-                    <div id="mypa-tabs-container" style="<?php echo $display_tabs ? '' : 'display: none;' ?>">
-                        <div id='mypa-tabs'>
+                    <div id="mypa-slider-holder">
+                        <div id="mypa-date-slider-left" class="mypa-arrow-left mypa-back-arrow mypa-date-slider-button mypa-slider-disabled"></div>
+                        <div id="mypa-date-slider-right" class="mypa-arrow-right myapa-next-arrow mypa-date-slider-button mypa-slider-disabled"></div>
+                        <div id="mypa-tabs-container">
+                            <div id='mypa-tabs'>
+                            </div>
                         </div>
                     </div>
-
                     <div class='mypa-delivery-content mypa-container-lg'>
                         <div class='mypa-header-lg mypa-delivery-header'>
                             <span><b>BEZORGOPTIES</b></span> <span class="mypa-location"></span>
@@ -728,6 +643,10 @@
 <body>
 <div style='width:100%;height:100%'>
     <myparcel id="myparcel"></myparcel>
+    <input style="display:none" name='mypa-post-nl-data' id="mypa-input">
+    <input type="checkbox" name='mypa-signed' style="display:none" id="mypa-signed">
+    <input type="checkbox" name='mypa-recipient-only' style="display:none" id="mypa-recipient-only">
+
 
 </div>
 </body>

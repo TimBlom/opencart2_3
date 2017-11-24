@@ -61,6 +61,7 @@ class MyParcel_Api extends MyParcel_Curl
 		$headers = array(
 			"Content-type: " . $content_type . "; charset=UTF-8",
 			'Authorization: basic '. base64_encode("{$this->key}"),
+            'User-Agent:' .  'OpenCart/2.3.0.2'
 		);
 
 		$request_url = $this->api_domain . $endpoint;

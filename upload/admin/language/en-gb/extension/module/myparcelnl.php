@@ -1,6 +1,6 @@
 <?php
 // Heading
-$_['heading_title']       = 'Myparcel NL v1.0.6';
+$_['heading_title']       = 'Myparcel NL v1.0.9';
 
 // Text
 $_['text_module']         = 'Modules';
@@ -107,6 +107,11 @@ $_['entry_tab_3_label_highlight_color']                = 'Highlight color';
 $_['entry_tab_3_label_custom_style']                   = 'Custom style';
 $_['entry_tab_3_label_auto_google_fronts']             = 'Automatically load Google fonts';
 $_['entry_tab_3_title_customizations']                 = 'Customizations';
+$_['entry_tab_3_label_standard_delivery']              = 'Standard delivery';
+$_['entry_tab_3_label_belgium_settings']               = 'Belgium pickup';
+$_['entry_tab_3_label_belgium_default_fee']            = 'Belgium standard fee';
+$_['entry_tab_3_label_belgium_pickup_fee']             = 'Standard pickup fee';
+$_['entry_tab_3_label_cut_off_weekday']                = 'Weekdays';
 
 $_['entry_unknown_error']                = 'Unknown error';
 $_['entry_api_error_with_order_id']      = 'Order #%s api error:';
@@ -231,3 +236,4 @@ $_['shipping_methods_via'] = 'Via';
 $_['error_sort_order_must_be_numeric'] = 'Sort order must be a number';
 $_['error_export_print_batch_error'] = 'Some of the selected orders might not be exported due to invalid address';
 $_['error_signature_required'] = 'Signature and Recipient Only are required for Pickup and Pick Express. It cannot be disabled.';
+$_['error_cut_off_not_correct_format'] = 'Cut off time is not in correct format.';

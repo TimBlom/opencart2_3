@@ -45,13 +45,25 @@ foreach ($checkout_helper::$delivery_types_as_value as $delivery_type => $key) {
 }
 $exclude_delivery_types = implode(';', $exclude_delivery_types);
 
+/**
+ * Get cut_off_time based on current day
+**/
+$cut_off_time = !empty($checkout_settings['cut_off_time']) ? $checkout_settings['cut_off_time'] : '';
+// If cut_off_time by weekdays enabled
+$cut_off_time_weekdays_enabled = !empty($checkout_settings['cut_off_weekday']) ? $checkout_settings['cut_off_weekday'] : '';
+if ($cut_off_time_weekdays_enabled) {
+    $day_of_week = date('w');
+    $cut_off_time = (!empty($checkout_settings['cut_off_time_weekdays'][$day_of_week]) ? $checkout_settings['cut_off_time_weekdays'][$day_of_week] : '');
+
+}
+
 // combine settings
 $settings = array(
     'base_url'				=> $frontend_api_url,
     'exclude_delivery_type'	=> $exclude_delivery_types,
     'price'					=> $prices,
-    'cutoff_time'			=> !empty($checkout_settings['cutoff_time']) ? $checkout_settings['cutoff_time'] : '',
-    'deliverydays_window'	=> !empty($checkout_settings['delivery_days_window']) ? max(1,$checkout_settings['delivery_days_window']) : 'disabled',
+    'cutoff_time'			=> $cut_off_time,
+    'deliverydays_window'	=> !empty($checkout_settings['delivery_days_window']) ? max(1,$checkout_settings['delivery_days_window']) : '',
     'dropoff_delay'			=> !empty($checkout_settings['dropoff_delay']) ? $checkout_settings['dropoff_delay'] : '',
     'dropoff_days'			=> !empty($checkout_settings['dropoff_days']) ? implode(';', $checkout_settings['dropoff_days'] ): '',
 );
@@ -82,6 +94,7 @@ if (version_compare(VERSION, '2.0.0.0', '>=')) {
         $settings['number'] = isset($address_parts['house_number']) ? $address_parts['house_number'] : '';
         $settings['street'] = isset($address_parts['street']) ? $address_parts['street'] : '';
         $settings['postal_code'] = $shipping_address['postcode'];
+        $settings['cc'] = $country_code;
     }
 } else {
     if (!empty($session->data['shipping_country_id'])) {
@@ -186,6 +199,7 @@ $ajax_get_loading_icon =  MyParcel()->getImageUrl() . 'myparcel-spin.gif';
         window.myparcel_delivery_iframe_url = "<?php echo $iframe_url ?>";
         window.myparcel_delivery_iframe_loading_icon = "<?php echo '<div style=\'margin:auto;\'><img src=\'' . MyParcel()->getImageUrl() . 'loading.gif' . '\'></div>'  ?>";
         window.enable_delivery = <?php echo (!empty($checkout_settings['enable_delivery']) ? 'true' : 'false') ?>;
+        window.enable_belgium = <?php echo (!empty($checkout_settings['belgium_enabled']) ? 'true' : 'false') ?>;
         window.myparcel_country = "<?php echo $country_code ?>";
         window.myparcel_ajax_get_address_url = "<?php echo $ajax_get_address_url ?>";
         window.myparcel_ajax_get_address_components_url = "<?php echo $ajax_get_address_components_url ?>";

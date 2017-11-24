@@ -331,6 +331,28 @@ class MyParcel_Helper
 
     function getAddressComponents($address)
     {
+        $ret = [];
+
+        $address = trim($address);
+        $is_single_word = (strpos($address, ' ') === false) ? true : false;
+
+        if ($is_single_word) {
+            $ret['street']          = $address;
+            $ret['house_number']    = '';
+            $ret['number_addition'] = '';
+
+            return $ret;
+        }
+
+        $parts = explode(' ', $address);
+        if (!empty($parts) && !is_numeric($parts[count($parts) - 1])) {
+            $ret['street']          = $address;
+            $ret['house_number']    = '';
+            $ret['number_addition'] = '';
+
+            return $ret;
+        }
+
         $matches = $this->_splitStreet($address);
 
         if (!empty($matches[2]))
@@ -667,6 +689,12 @@ class MyParcel_Helper
         $data['entry_tab_3_label_custom_style'] = $language->get('entry_tab_3_label_custom_style');
         $data['entry_tab_3_label_auto_google_fronts'] = $language->get('entry_tab_3_label_auto_google_fronts');
         $data['entry_tab_3_title_customizations'] = $language->get('entry_tab_3_title_customizations');
+        $data['entry_tab_3_label_standard_delivery'] = $language->get('entry_tab_3_label_standard_delivery');
+        $data['entry_tab_3_label_belgium_settings'] = $language->get('entry_tab_3_label_belgium_settings');
+        $data['entry_tab_3_label_belgium_default_fee'] = $language->get('entry_tab_3_label_belgium_default_fee');
+        $data['entry_tab_3_label_belgium_pickup_fee'] = $language->get('entry_tab_3_label_belgium_pickup_fee');
+        $data['entry_tab_3_label_cut_off_weekday'] = $language->get('entry_tab_3_label_cut_off_weekday');
+        $data['error_cut_off_not_correct_format'] = $language->get('error_cut_off_not_correct_format');
 
         $data['days_of_the_week'] = array(
             '0' => $language->get('Sunday'),
@@ -736,6 +764,45 @@ class MyParcel_Helper
             return ($result->num_rows);
         }
     }
+
+    function getCountryIsoCodeFromSession()
+    {
+        $registry = MyParcel::$registry;
+        $session = $registry->get('session');
+        $country_code = '';
+
+        if (version_compare(VERSION, '2.0.0.0', '>=')) {
+            $address_data = isset($session->data['shipping_address']) ? $session->data['shipping_address'] : (isset($session->data['payment_address']) ? $session->data['payment_address'] : null);
+            $country_code = $address_data['iso_code_2'];
+        } else {
+            if (MyParcel()->helper->isModuleExist('d_quickcheckout', true)) {
+                $address_data['address_1'] = $session->data['shipping_address']['address_1'];
+                $address_data['postcode'] = $session->data['shipping_address']['postcode'];
+                $country_code = $session->data['shipping_address']['iso_code_2'];
+            } else {
+                if (!empty($session->data['shipping_country_id'])) {
+                    $loader = $registry->get('load');
+
+                    if (!empty($session->data['shipping_address_id']) && empty($session->data['guest']['shipping'])) {
+                        $address_id = $session->data['shipping_address_id'];
+                        $loader->model('account/address');
+                        $model_address = $registry->get('model_account_address');
+                        $address_data = $model_address->getAddress($address_id);
+                        $country_code = $address_data['iso_code_2'];
+                    } else {
+                        if (!empty($session->data['guest']['shipping']['address_1'])) {
+                            $address_data['address_1'] = $session->data['guest']['shipping']['address_1'];
+                            $address_data['postcode'] = $session->data['guest']['shipping']['postcode'];
+                            $country_code = $session->data['guest']['shipping']['iso_code_2'];
+                        }
+                    }
+                }
+            }
+        }
+
+        return $country_code;
+    }
+
 }
 
 return new MyParcel_Helper();

@@ -34,7 +34,7 @@
           <div class="form-group">
             <label class="col-sm-2 control-label" for="input-cost"><?php echo $entry_cost; ?></label>
             <div class="col-sm-10">
-              <input type="text" name="myparcel_shipping_cost" disabled="disabled" value="<?php echo $myparcel_shipping_cost; ?>" placeholder="<?php echo $entry_cost; ?>" id="input-cost" class="form-control" />
+              <input type="text" name="myparcel_shipping_cost" value="<?php echo $myparcel_shipping_cost; ?>" placeholder="<?php echo $entry_cost; ?>" id="input-cost" class="form-control" />
             </div>
           </div>
           <div class="form-group">

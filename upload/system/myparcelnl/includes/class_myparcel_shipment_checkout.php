@@ -11,15 +11,20 @@ class MyParcel_Shipment_Checkout
 
     static $delivery_types = array(
         'morning',
-        'standard',
+        'default',
         'night',
         'pickup',
         'pickup_express',
     );
 
+    static $belgium_delivery_types = array(
+        'default',
+        'pickup',
+    );
+
     static $delivery_types_as_value = array(
         'morning'           => self::DELIVERY_TYPE_MORNING,
-        'standard'          => self::DELIVERY_TYPE_STANDARD,
+        'default'          => self::DELIVERY_TYPE_STANDARD,
         'night'             => self::DELIVERY_TYPE_NIGHT,
         'pickup'            => self::DELIVERY_TYPE_PICKUP,
         'pickup_express'    => self::DELIVERY_TYPE_PICKUP_EXPRESS,
@@ -49,6 +54,42 @@ class MyParcel_Shipment_Checkout
         } else {
             $delivery_options = $data['data'];
         }
+
+        $registry               = MyParcel::$registry;
+        $config                 = $registry->get('config');
+        $checkout_settings      = $config->get('myparcelnl_fields_checkout');
+        $belgium_enabled        = !empty($checkout_settings['belgium_enabled']) ? true : false;
+        $country_code           = MyParcel()->helper->getCountryIsoCodeFromSession();
+        /**
+         * If country is BE
+         * Then check if the BE setting is enabled
+        **/
+
+        if ($belgium_enabled && $country_code == 'BE' && !empty($delivery_options['price_comment'])) {
+
+            $prices = $this->getDeliveryPrices($price_format);
+
+            $total_array = array();
+
+            if ($delivery_options['price_comment'] == 'standard' && !empty($prices['BE']['default'])) {
+                $total_array = array(
+                    'default' => array(
+                        'title' => MyParcel()->lang->get('entry_total_myparcel_belgium_default'),
+                        'price' => $prices['BE']['default'],
+                    ),
+                );
+            } elseif (!empty($prices['BE']['pickup'])) {
+                $total_array = array(
+                    'pickup' => array(
+                        'title' => MyParcel()->lang->get('entry_total_myparcel_belgium_pickup'),
+                        'price' => $prices['BE']['pickup'],
+                    )
+                );
+            }
+
+            return $total_array;
+        }
+
         $signed = false;
         $recipient_only = false;
 
@@ -76,20 +117,33 @@ class MyParcel_Shipment_Checkout
      */
     public function getDeliveryTotalsFromSavedData($myparcel_delivery_options, $signed = false, $recipient_only = false, $price_format = false, $order_id = null, $prefix = '')
     {
+        /**
+         * Important: This function is executed in CATALOG scenario
+        **/
+
         $total_array = array();
         $delivery_type = $this->getDeliveryTypeFromSavedData($myparcel_delivery_options);
         $delivery_type_text = array_search($delivery_type, self::$delivery_types_as_value);
         if (!$delivery_type_text) {
-            $delivery_type_text = 'standard';
+            $delivery_type_text = 'default';
         }
 
         if (!empty($order_id) && is_numeric($order_id)) {
             $registry = MyParcel::$registry;
             $loader = $registry->get('load');
             $loader->model(MyParcel()->getModelPath('shipment'));
+            $loader->model(MyParcel()->getModelPath('helper'));
             /** @var ModelMyparcelnlShipment $model_shipment **/
             $model_shipment = $registry->get('model_myparcelnl_shipment');
             $prices = $model_shipment->getMyParcelOrderPrices($order_id);
+
+            $model_helper = $registry->get('model_myparcelnl_helper');
+            $country_code = $model_helper->getOrderCountryIsoCode($order_id);
+
+            if (isset($prices[$country_code])) {
+                $prices = $prices[$country_code];
+            }
+
             if (!empty($prices) && $prefix) {
                 foreach ($prices as &$price_text){
                     $price_text = $prefix . $price_text;
@@ -99,6 +153,8 @@ class MyParcel_Shipment_Checkout
 
         if (empty($prices)) {
             $prices = $this->getDeliveryPrices($price_format, false, $prefix); // Get Prices without formatting
+            $country_code           = MyParcel()->helper->getCountryIsoCodeFromSession();
+            $prices = $prices[$country_code];
         }
 
         if (!empty($prices[$delivery_type_text])) {
@@ -106,6 +162,7 @@ class MyParcel_Shipment_Checkout
                 'title' => MyParcel()->lang->get('entry_total_myparcel_' . $delivery_type_text),
                 'price' => $prices[$delivery_type_text]
             );
+
         } else {
             // MAILBOX mode
             $mailbox_fee = floatval(MyParcel()->settings->checkout->mailbox_fee);
@@ -139,6 +196,7 @@ class MyParcel_Shipment_Checkout
                 }
             }
         }
+
         return $total_array;
     }
 
@@ -226,11 +284,12 @@ class MyParcel_Shipment_Checkout
 
         foreach ($price_options as $key => $option) {
             // JS API correction
-            if ($option == 'standard') {
+           /* if ($option == 'standard') {
                 $option = 'default';
-            }
+            }*/
 
             $option_enabled = (!empty($checkout_settings[$option.'_enabled'])) ? true : false;
+
             if ($option_enabled) {
                 if (!empty($checkout_settings[$option . '_fee'])) {
                     $fee = $checkout_settings[$option . '_fee'];
@@ -258,7 +317,39 @@ class MyParcel_Shipment_Checkout
             $prices['pickup_express'] = '';
         }
 
-        return $prices;
+        $belgium_enabled = !empty($checkout_settings['belgium_enabled']) ? true : false;
+
+        if ($belgium_enabled) {
+            $price_options = array_merge( self::$belgium_delivery_types );
+            $be_prices = array();
+
+            foreach ($price_options as $option) {
+
+                $formatted_fee = '';
+
+                if (!empty($checkout_settings['belgium_' . $option . '_fee'])) {
+                    $fee = $checkout_settings['belgium_' . $option . '_fee'];
+                    $fee = $this->convertPriceToFloat($fee);
+                    $fee_including_tax = $fee;
+                    if ($price_format) {
+                        $formatted_fee = $this->formatDeliveryPrice($fee_including_tax, $currency, $color_format, $prefix);
+                    } else {
+                        $formatted_fee = $fee_including_tax;
+                    }
+                }
+
+                $be_prices[$option] = $formatted_fee;
+            }
+
+            return array(
+                'NL' => $prices,
+                'BE' => $be_prices
+            );
+        }
+
+        return array(
+            'NL' => $prices,
+        );
     }
 
     /**
@@ -425,6 +516,8 @@ class MyParcel_Shipment_Checkout
     **/
     function isVisibleShippingQuote($shipping_method)
     {
+        return true;
+
         $registry = MyParcel::$registry;
         $config = $registry->get('config');
         $export_default_settings = $config->get('myparcelnl_fields_export');
@@ -440,6 +533,7 @@ class MyParcel_Shipment_Checkout
                 if (!empty($export_default_settings['shipping_methods_package_types'])) {
 
                     foreach ($export_default_settings['shipping_methods_package_types'] as $package_type) {
+
                         if (!empty($package_type)) {
                             // Shipping methods associated with parcels = enable delivery options
                             $delivery_options_shipping_methods = $package_type;

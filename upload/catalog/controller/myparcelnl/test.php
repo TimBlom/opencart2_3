@@ -5,10 +5,10 @@ class ControllerMyparcelnlTest extends Controller
     public function index()
     {
         require_once DIR_SYSTEM . 'myparcelnl/class_myparcel.php';
-        $api = MyParcel($this->registry)->api;
-        //$api_key = '8f0ec57c3a9c7af6d7e793df799c07345e3fffcd';
 
-        var_dump($api->getShipments('19170030'));die;
+        $helper = MyParcel($this->registry)->helper;
+        $address_parts = $helper->getAddressComponents('Hoofdweg');
+        var_dump($address_parts);die;
     }
 
     function serialize()
@@ -37,7 +37,6 @@ class ControllerMyparcelnlTest extends Controller
     {
         require_once DIR_SYSTEM . 'myparcelnl/class_myparcel.php';
         MyParcel($this->registry);
-
     }
 
     function get_order()

@@ -26,6 +26,11 @@ class MyParcel_Shipment_Helper
                 'number'		=> $pickup['number'],
                 'location_name'	=> $pickup['location'],
             );
+
+            if ($order_data['shipping_iso_code_2'] == 'BE') {
+                $shipment['pickup']['location_code'] = $pickup['location_code'];
+                $shipment['pickup']['retail_network_id'] = $pickup['retail_network_id'];
+            }
         }
 
         return $shipment;
@@ -46,22 +51,49 @@ class MyParcel_Shipment_Helper
         );
 
         if ( $order['shipping_iso_code_2'] == 'NL' ) {
-            /** @var MyParcel_Helper $helper **/
+            /** @var MyParcel_Helper $helper * */
             $helper = MyParcel()->helper;
+
+            if (!empty($order['shipping_address_2']) && is_numeric(($order['shipping_address_2']))) {
+                $order['shipping_address_1'] = $order['shipping_address_1'] . ' ' . $order['shipping_address_2'];
+            }
+
             $address_parts = $helper->getAddressComponents($order['shipping_address_1']);
 
             $address_intl = array(
-                'street'		=> isset($address_parts['street']) ? $address_parts['street'] : '',
-                'number'		=> isset($address_parts['house_number']) ? $address_parts['house_number'] : '',
+                'street' => isset($address_parts['street']) ? $address_parts['street'] : '',
+                'number' => isset($address_parts['house_number']) ? $address_parts['house_number'] : '',
                 'number_suffix' => isset($address_parts['number_addition']) ? $address_parts['number_addition'] : '',
-                'postal_code'	=> $order['shipping_postcode'],
+                'postal_code' => $order['shipping_postcode'],
             );
+
+        } elseif ($order['shipping_iso_code_2'] == 'BE') {
+
+            /** @var MyParcel_Helper $helper * */
+            $helper = MyParcel()->helper;
+            if (!empty($order['shipping_address_2']) && is_numeric(($order['shipping_address_2']))) {
+                $order['shipping_address_1'] = $order['shipping_address_1'] . ' ' . $order['shipping_address_2'];
+            }
+            $address_parts = $helper->getAddressComponents($order['shipping_address_1']);
+
+            $address_intl = array(
+                'street' => isset($address_parts['street']) ? $address_parts['street'] : '',
+                'number' => isset($address_parts['house_number']) ? $address_parts['house_number'] : '',
+                'number_suffix' => isset($address_parts['number_addition']) ? $address_parts['number_addition'] : '',
+                'postal_code' => $order['shipping_postcode'],
+            );
+
         } else {
+
+            $street = $order['shipping_address_1'] . (!empty($order['shipping_address_2']) ? ' ' . $order['shipping_address_2'] : '');
+
             $address_intl = array(
                 'postal_code'				=> $order['shipping_postcode'],
-                'street'					=> $order['shipping_address_1'],
-                'street_additional_info'	=> $order['shipping_address_2'],
-                'region'                    => isset($order['shipping_zone']) ? $order['shipping_zone'] : ''
+                'street'					=> $street,
+                'street_additional_info'	=> '',
+                'region'                    => isset($order['shipping_zone']) ? $order['shipping_zone'] : '',
+                'phone'                     => '',
+                'company'                   => ''
             );
         }
 
@@ -78,7 +110,7 @@ class MyParcel_Shipment_Helper
      * @return array
      *
     **/
-    public function getOptions( $order_data , $view = false)
+    public function getOptions( $order_data , $view = false )
     {
         /** @var ModelMyparcelnlShipment $model_shipment **/
         $registry = MyParcel::$registry;
@@ -873,7 +905,7 @@ class MyParcel_Shipment_Helper
         $total_weight = 0;
 
         foreach ($products as $product) {
-            $option_weight = '';
+            $option_weight = 0;
 
             $product_info = $model_product->getProduct($product['product_id']);
 

@@ -2,7 +2,7 @@
 require_once DIR_SYSTEM . 'myparcelnl/class_myparcel.php';
 class ControllerExtensionModuleMyparcelnl extends Controller
 {
-    protected $version = '1.0.6';
+    protected $version = '1.0.4';
 
     private $error = array();
 
@@ -351,9 +351,9 @@ class ControllerExtensionModuleMyparcelnl extends Controller
                 MyParcel()->notice->add($this->language->get('error_cut_off_time'), 'warning');
             }
 
-            /*if (!empty($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']) && !is_numeric($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']) || intval($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']) < 0) {
+            if (!empty($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']) && !is_numeric($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']) || intval($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']) < 0) {
                 MyParcel()->notice->add($this->language->get('error_delivery_days_window'), 'warning');
-            }*/
+            }
 
             /*if ( (isset($this->request->post['myparcelnl_fields_export']['empty_parcel_weight']) && !is_numeric($this->request->post['myparcelnl_fields_export']['empty_parcel_weight']) ) || (!empty($this->request->post['myparcelnl_fields_export']['empty_parcel_weight']) && intval($this->request->post['myparcelnl_fields_export']['empty_parcel_weight'])<0) ) {
                 MyParcel()->notice->add($this->language->get('error_empty_parcel_weight'), 'warning');
@@ -415,9 +415,18 @@ class ControllerExtensionModuleMyparcelnl extends Controller
                 }
             }
 
-           /* if ((trim($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']) == '') || (!empty($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']) && !is_numeric($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']))) {
+            if (!empty($this->request->post['myparcelnl_fields_checkout']['cut_off_time_weekdays'])) {
+                foreach ($this->request->post['myparcelnl_fields_checkout']['cut_off_time_weekdays'] as $cut_off_time_day) {
+                    if (!empty($cut_off_time_day) && !MyParcel()->helper->validate_cutoff_time($cut_off_time_day)) {
+                        MyParcel()->notice->add($this->language->get('error_cut_off_not_correct_format'), 'warning');
+                        break;
+                    }
+                }
+            }
+
+            if (empty($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']) || (empty($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']) && !is_numeric($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']))) {
                 MyParcel()->notice->add($this->language->get('error_delivery_windows'), 'warning');
-            }*/
+            }
         }
     }
 }

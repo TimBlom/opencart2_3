@@ -27,7 +27,7 @@ class MyParcel_Curl
             CURLOPT_CONNECTTIMEOUT  => 20,
             CURLOPT_ENCODING        => "",
             CURLOPT_SSL_VERIFYPEER  => true,
-            CURLOPT_USERAGENT       => 'MyParcel Curl Class - CUrl version: ' . $curl_version['version'],
+            CURLOPT_USERAGENT       => 'Opencart/2.3.0.2',
             CURLOPT_CAINFO          => dirname(__FILE__) . '/ssl/ca-bundle.pem'
         );
     }

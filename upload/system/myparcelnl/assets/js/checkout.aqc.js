@@ -30,9 +30,12 @@ var MYPARCEL_CHECKOUT = MYPARCEL_CHECKOUT || {};
                     return true;
                 }
 
+                var is_payment_update = settings.url.indexOf('d_quickcheckout/payment_address/update');
+                var is_shipping_update = settings.url.indexOf('d_quickcheckout/shipping_address/update');
+
                 if (
-                    settings.url.indexOf('d_quickcheckout/payment_address/update') >= 0 ||
-                    settings.url.indexOf('d_quickcheckout/shipping_address/update') >= 0 ||
+                    is_payment_update >= 0 ||
+                    is_shipping_update >= 0 ||
                     settings.url.indexOf('d_quickcheckout/login/updateAll') >= 0
                 ) {
                     var same_shipping_address = false;
@@ -40,13 +43,36 @@ var MYPARCEL_CHECKOUT = MYPARCEL_CHECKOUT || {};
                         same_shipping_address = true;
                     }
 
-                    if (settings.url.indexOf('d_quickcheckout/payment_address/update') >= 0 && !same_shipping_address) {
+                    var need_compare_address = false;
+                    if (is_payment_update >= 0 && !same_shipping_address) {
                         return true;
+                    } else {
+                        // Compare current address
+                        if (is_payment_update >=0 || is_shipping_update) {
+                            need_compare_address = true;
+                        }
                     }
 
                     var aqcRes = xhr.responseJSON;
                     if (typeof aqcRes === 'undefined' || !aqcRes) {
                         aqcRes = JSON.parse(xhr.responseText);
+                    }
+
+                    if (need_compare_address && aqcRes) {
+                        var addressData = {};
+
+                        if (is_payment_update >= 0) {
+                            addressData = aqcRes.payment_address;
+                        } else {
+                            addressData = aqcRes.shipping_address;
+                        }
+
+                        if (
+                            $.trim(window.mypa.settings.street + ' ' + window.mypa.settings.number)     === $.trim(addressData.address_1 + ' ' + addressData.address_2) &&
+                            window.mypa.settings.postal_code                                            === addressData.postcode
+                        ) {
+                           return true;
+                        }
                     }
 
                     MYPARCEL_CHECKOUT.retrieveAddressComponents(aqcRes);
@@ -55,34 +81,26 @@ var MYPARCEL_CHECKOUT = MYPARCEL_CHECKOUT || {};
 
             $(document).on('change', '#mypa-input', function() {
 
-                if (typeof myparcel_update_timer !== 'undefined') {
-                    clearTimeout(myparcel_update_timer);
-                }
-
-                myparcel_update_timer = setTimeout( function() {
-
-                    $.ajax({
-                        url: window.myparcel_ajax_set_session,
-                        data: {
-                            'mypa_data': $('#mypa-input').val(),
-                            'mypa_signed': ($('#mypa-signed').prop('checked') ? 'on' : 'off'),
-                            'mypa_recipient_only': ($('#mypa-recipient-only').prop('checked') ? 'on' : 'off'),
-                        },
-                        type: 'POST',
-                        dataType: 'json',
-                        success: function(res) {
-                            if (res.status == 'success') {
-                                preloaderStart();
-                                if (window.myparcel_oc_version < '2.0.0.0') {
-                                    $('.qc-product-qantity').trigger('change');
-                                } else {
-                                    qc.cart.updateCart();
-                                }
+                $.ajax({
+                    url: window.myparcel_ajax_set_session,
+                    data: {
+                        'mypa_data': $('#mypa-input').val(),
+                        'mypa_signed': ($('#mypa-signed').prop('checked') ? 'on' : 'off'),
+                        'mypa_recipient_only': ($('#mypa-recipient-only').prop('checked') ? 'on' : 'off'),
+                    },
+                    type: 'POST',
+                    dataType: 'json',
+                    success: function(res) {
+                        if (res.status == 'success') {
+                            preloaderStart();
+                            if (window.myparcel_oc_version < '2.0.0.0') {
+                                $('.qc-product-qantity').trigger('change');
+                            } else {
+                                qc.cart.updateCart();
                             }
                         }
-                    });
-
-                }, 10 );
+                    }
+                });
             });
 
             /**
@@ -326,8 +344,12 @@ var MYPARCEL_CHECKOUT = MYPARCEL_CHECKOUT || {};
             MYPARCEL_CHECKOUT.helper.checkCountry();
         }
 
+        var address_1 = aqcRes.shipping_address.address_1;
+        if (typeof aqcRes.shipping_address.address_2 !== 'undefined') {
+            address_1 += ' ' + aqcRes.shipping_address.address_2;
+        }
         var data = {
-            address_1: aqcRes.shipping_address.address_1,
+            address_1: address_1,
         };
 
         $.ajax({

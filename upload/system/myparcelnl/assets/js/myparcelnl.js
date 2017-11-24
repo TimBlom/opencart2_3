@@ -92,7 +92,6 @@ $(document).ready(function() {
 
     $('#select_insured_amount').on('change', function()
     {
-        console.log($(this).val());
         if ($(this).val() == ''){
             if ($('#input_insured_amount_custom').hasClass("hidden")) {
                 $('#input_insured_amount_custom').removeClass("hidden");
@@ -107,4 +106,13 @@ $(document).ready(function() {
         }
     });
 
+    $('#checkout_cut_off_weekday').on('change', function() {
+        if($(this).prop('checked') === true) {
+            $('#cut_off_time_all_wrapper').hide();
+            $('#cut_off_time_weekdays_wrapper').show();
+        } else {
+            $('#cut_off_time_all_wrapper').show();
+            $('#cut_off_time_weekdays_wrapper').hide();
+        }
+    });
 });

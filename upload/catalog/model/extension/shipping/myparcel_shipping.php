@@ -2,15 +2,17 @@
 class ModelExtensionShippingMyparcelShipping extends Model {
 	function getQuote($address) {
 
+        $checkout_settings          = $this->config->get('myparcelnl_fields_checkout');
 		$status = !empty($this->config->get('myparcel_shipping_status')) ? true : false;
+        $belgium_enabled = !empty($checkout_settings['belgium_enabled']) ? true : false;
 		$country_iso_code = isset($address['iso_code_2']) ? $address['iso_code_2'] : null;
 
 		$method_data = array();
 
-		if ($status && $country_iso_code == 'NL') {
+		if ($status && ($country_iso_code == 'NL' || ($belgium_enabled && $country_iso_code == 'BE'))) {
 			$total_price = 0;
 
-			/** @var MyParcel_Shipment_Checkout $checkout_helper * */
+			/** @var MyParcel_Shipment_Checkout $checkout_helper **/
 			/**
 			 * This case should happen in admin / edit order
 			 * In the last step, OC needs to retrieve a list of shipment methods
@@ -18,10 +20,12 @@ class ModelExtensionShippingMyparcelShipping extends Model {
 			 * So we need to add it via session
 			**/
 			if (isset($this->session->data['myparcel_order_id'])) {
-				if (!class_exists('MyParcel')) {
-					require_once DIR_SYSTEM . 'myparcelnl/class_myparcel.php';
-					MyParcel($this->registry);
-				}
+
+                if (!class_exists('MyParcel')) {
+                    require_once DIR_SYSTEM . 'myparcelnl/class_myparcel.php';
+                    MyParcel($this->registry);
+                }
+
 				$checkout_helper = MyParcel()->shipment->checkout;
 				$checkout_helper->setSessionOrderDeliveryOptions($this->session->data['myparcel_order_id']);
 				$data = $this->session->data['myparcel'];

@@ -596,7 +596,10 @@ class MyParcel_View extends MyParcel_View_Core
             }
         }
 
-        if (!$order_info && $myparcel_country != 'NL' && !MyParcel()->helper->isModuleExist('d_quickcheckout', true)) {
+        $belgium_enabled = intval(MyParcel()->settings->checkout->belgium_enabled);
+        $country_allowed = ($myparcel_country == 'NL' || ($myparcel_country == 'BE' && $belgium_enabled)) ? true : false;
+
+        if (!$order_info && !$country_allowed && !MyParcel()->helper->isModuleExist('d_quickcheckout', true)) {
             return '';
         }
 
