@@ -39,3 +39,7 @@ $_['entry_mailbox'] = 'Mailbox';
 $_['entry_delivery_type'] = 'Package Type';
 $_['entry_mailbox_desc'] = 'This package type is only available for NL shipment that fit into a mailbox';
 $_['entry_total_myparcel_mailbox'] = 'Mailbox fee';
+$_['error_address_3'] = 'Address 3 must be between 0 and 4 characters!';
+$_['error_address_2'] = 'Address 2 cannot be empty!';
+$_['error_address_3_need_edit'] = 'Address 3 must be between 0 and 4 characters! Please edit your address';
+$_['error_address_2_need_edit'] = 'Address 2 cannot be empty! Please edit your address';

@@ -212,6 +212,10 @@
             $('#mypa-no-options').html('Bezig met laden...');
             $('.mypa-overlay').removeClass('mypa-hidden');
             $('.mypa-location').html(street + " " + number);
+
+            // Custom code
+            window.parent.window.MYPARCEL_CHECKOUT.loading();
+
             options = {
                 url: urlBase,
                 data: {
@@ -227,9 +231,31 @@
                     deliverydays_window: settings.deliverydays_window != null ? settings.deliverydays_window : void 0,
                     exclude_delivery_type: settings.exclude_delivery_type != null ? settings.exclude_delivery_type : void 0
                 },
+                error: function() {
+                    window.parent.window.MYPARCEL_CHECKOUT.eventError();
+                },
                 success: renderPage
             };
             return externalJQuery.ajax(options);
+        };
+
+        Application.prototype.showLoading = function() {
+            $('#mypa-no-options').html('Bezig met laden...');
+            $('.mypa-overlay').removeClass('mypa-hidden');
+        };
+
+        Application.prototype.hideLoading = function() {
+            $('.mypa-overlay').addClass('mypa-hidden');
+        };
+
+        Application.prototype.resetForm = function() {
+            $('#mypa-delivery-option-check').prop('checked', false).trigger('change');
+            $('#mypa-mailbox-location').prop('checked', false).trigger('change');
+            $('#mypa-pickup-location').prop('checked', false).trigger('change');
+        };
+
+        Application.prototype.activateForm = function() {
+            $('#mypa-delivery-option-check').prop('checked', true).trigger('change');
         };
 
         return Application;
@@ -246,6 +272,9 @@
             this.slideLeft = bind(this.slideLeft, this);
             var $el, $tabs, date, delivery, deliveryTimes, html, i, index, len, ref;
             this.deliveryDays = deliveryDays;
+            if (typeof window.mypa.settings.deliverydays_window === "undefined") {
+                $("#mypa-slider-holder").hide()
+            }
             if (deliveryDays.length < 1) {
                 $('mypa-delivery-row').addClass('mypa-hidden');
                 return;
@@ -254,7 +283,11 @@
             deliveryDays.sort(this.orderDays);
             deliveryTimes = window.mypa.sortedDeliverytimes = {};
             $el = $('#mypa-tabs').html('');
-            window.mypa.deliveryDays = deliveryDays.length;
+            if (typeof window.mypa.settings.deliverydays_window === "undefined") {
+                window.mypa.deliveryDays = 1;
+            } else {
+                window.mypa.deliveryDays = deliveryDays.length;
+            }
             index = 0;
             ref = this.deliveryDays;
             for (i = 0, len = ref.length; i < len; i++) {
@@ -381,6 +414,10 @@
      */
 
     renderPage = function(response) {
+
+        // Custom code
+        window.parent.window.MYPARCEL_CHECKOUT.loadingComplete();
+
         if (response.data.message === 'No results') {
             $('#mypa-no-options').html('Geen bezorgopties gevonden voor het opgegeven adres.');
             $('.mypa-overlay').removeClass('mypa-hidden');
@@ -397,6 +434,7 @@
             setDefaultDelivery(response.data.delivery[0]);
         }
         preparePickup(response.data.pickup);
+        window.parent.window.MYPARCEL_CHECKOUT.journalThemeEventActivated();
         $('#mypa-delivery-options-title').on('click', function() {
             var date;
             if (window.mypa.settings.cc === NATIONAL) {
@@ -432,7 +470,10 @@
             }
         });
         // End custom code
-
+        // Custom code for journal2 theme
+        $("#mypa-delivery-options-container").on("click", "input[name='mypa-delivery-time'], input[name='mypa-delivery-type'], .mypa-onoffswitch-checkbox,  input[name='mypa-pickup-option']", function(){
+            window.parent.window.MYPARCEL_CHECKOUT.journalThemeEventActivated();
+        });
         return updateInputField();
     };
 
@@ -494,7 +535,9 @@
         }
         showDefaultPickupLocation('#mypa-pickup-address', filter[PICKUP_TIMES[NORMAL_PICKUP]][0]);
         if (window.mypa.settings.cc === NATIONAL) {
-            showDefaultPickupLocation('#mypa-pickup-express-address', filter[PICKUP_TIMES[MORNING_PICKUP]][0]);
+            if (PICKUP_TIMES[MORNING_PICKUP] in filter) {
+                showDefaultPickupLocation('#mypa-pickup-express-address', filter[PICKUP_TIMES[MORNING_PICKUP]][0]);
+            }
         }
         $('#mypa-pickup-address').off().bind('click', renderPickup);
         $('#mypa-pickup-express-address').off().bind('click', renderExpressPickup);
@@ -677,7 +720,7 @@
                 $('input#mypa-only-recipient').prop('checked', true).prop('disabled', true);
                 $('label[for=mypa-only-recipient] span.mypa-price').html('incl.');
             } else {
-                onlyRecipientPrice = window.mypa.settings.price[this.cc].only_recipient;
+                onlyRecipientPrice = window.mypa.settings.price[window.mypa.settings.cc].only_recipient;
                 $('input#mypa-only-recipient').prop('disabled', false);
                 $('label[for=mypa-only-recipient] span.mypa-price').html(onlyRecipientPrice);
             }

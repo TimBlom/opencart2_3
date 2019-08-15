@@ -2,7 +2,7 @@
 require_once DIR_SYSTEM . 'myparcelnl/class_myparcel.php';
 class ControllerExtensionModuleMyparcelnl extends Controller
 {
-    protected $version = '1.0.4';
+    protected $version = '1.0.7';
 
     private $error = array();
 
@@ -154,7 +154,8 @@ class ControllerExtensionModuleMyparcelnl extends Controller
                     break;
                 case 'get_labels':
                     $order_ids = isset($request['order_ids']) ? $request['order_ids'] : null;
-                    $shipment->printPdf($order_ids);
+                    $position = isset($request['position']) ? $request['position'] : null;
+                    $shipment->printPdf($order_ids,NULL,$position);
                     break;
                 case 'add_return':
                     $shipment->addReturn($request); // Get return form and show in a popup
@@ -180,7 +181,8 @@ class ControllerExtensionModuleMyparcelnl extends Controller
         } elseif (isset($this->request->get['order_id'])) {
             $orders[] = $this->request->get['order_id'];
         }
-        $shipment->printPdf($orders);
+        $position = isset($this->request->post['positions']) ? $this->request->post['positions'] : null;
+        $shipment->printPdf($orders,NULL,$position);
     }
 
     public function exportBatch()
@@ -424,7 +426,7 @@ class ControllerExtensionModuleMyparcelnl extends Controller
                 }
             }
 
-            if (empty($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']) || (empty($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']) && !is_numeric($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']))) {
+            if ((isset($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']) && !is_numeric($this->request->post['myparcelnl_fields_checkout']['delivery_days_window']))) {
                 MyParcel()->notice->add($this->language->get('error_delivery_windows'), 'warning');
             }
         }

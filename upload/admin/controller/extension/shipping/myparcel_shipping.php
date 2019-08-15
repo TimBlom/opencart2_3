@@ -95,7 +95,11 @@ class ControllerExtensionShippingMyparcelShipping extends Controller {
 		$data['column_left'] = $this->load->controller('common/column_left');
 		$data['footer'] = $this->load->controller('common/footer');
 
-		$this->response->setOutput($this->load->view(MyParcel()->getShippingPath() . 'myparcel_shipping', $data));
+        if (version_compare(VERSION, '2.2.2.0', '>=')) {
+            $this->response->setOutput($this->load->view(MyParcel()->getShippingPath() . 'myparcel_shipping', $data));
+        } else {
+            $this->response->setOutput($this->load->view(MyParcel()->getShippingPath() . 'myparcel_shipping.tpl', $data));
+        }
 	}
 
 	protected function validate() {

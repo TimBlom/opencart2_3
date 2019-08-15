@@ -18,7 +18,9 @@ class MyParcel_View extends MyParcel_View_Core
     {
         $registry = MyParcel::$registry;
         $lang = $registry->get('language');
-        $lang->load(MyParcel()->getMyparcelModulePath());
+        //prevent overriding heading_title
+        MyParcel()->loadMyparcelLang($lang);
+
         $session = $registry->get('session');
         $url = MyParcel()->url;
         $token = $session->data['token'];
@@ -30,7 +32,7 @@ class MyParcel_View extends MyParcel_View_Core
         }
 
         ob_start();
-        $this->render('view_print_batch', array('formAction' => $formAction));
+        $this->render('view_print_batch', array('formAction' => $formAction,'position_label_title' => $lang->get('entry_title_choose_position_label')));
         $html = ob_get_clean();
         return $html;
     }
@@ -39,7 +41,9 @@ class MyParcel_View extends MyParcel_View_Core
     {
         $registry = MyParcel::$registry;
         $lang = $registry->get('language');
-        $lang->load(MyParcel()->getMyparcelModulePath());
+        //prevent overriding heading_title
+        MyParcel()->loadMyparcelLang($lang);
+
         $session = $registry->get('session');
         $url = MyParcel()->url;
         $token = $session->data['token'];
@@ -54,7 +58,9 @@ class MyParcel_View extends MyParcel_View_Core
     {
         $registry = MyParcel::$registry;
         $lang = $registry->get('language');
-        $lang->load(MyParcel()->getMyparcelModulePath());
+        //prevent overriding heading_title
+        MyParcel()->loadMyparcelLang($lang);
+
         $session = $registry->get('session');
         $url = $registry->get('url');
         $token = $session->data['token'];
@@ -79,7 +85,8 @@ class MyParcel_View extends MyParcel_View_Core
 
         // Load language package of MyParcel module
         $lang = $registry->get('language');
-        $lang->load(MyParcel()->getMyparcelModulePath());
+        //prevent overriding heading_title
+        MyParcel()->loadMyparcelLang($lang);
 
         // Load other packages
         $url = MyParcel()->url;
@@ -148,9 +155,18 @@ class MyParcel_View extends MyParcel_View_Core
             unset($listing_actions['add_return']);
         }
 
+        $listing_position_label = array();
+        if(isset($listing_actions['get_labels'])){
+            $listing_position_label = array(
+                'title'     => $lang->get('entry_title_choose_position_label'),
+                'url' => $listing_actions['get_labels']['url'],
+            );
+        }
+        
         ob_start();
-        $this->render('view_column_myparcel', array('listing_actions' => $listing_actions, 'order_id' => $order_id, 'screen' => $screen));
+        $this->render('view_column_myparcel', array('listing_actions' => $listing_actions,'listing_position_label' => $listing_position_label ,'order_id' => $order_id, 'screen' => $screen));
         $html = ob_get_clean();
+
 
         return $html;
     }
@@ -225,7 +241,8 @@ class MyParcel_View extends MyParcel_View_Core
         }
 
         $lang = $registry->get('language');
-        $lang->load(MyParcel()->getMyparcelModulePath());
+        //prevent overriding heading_title
+        MyParcel()->loadMyparcelLang($lang);
 
         $data = array();
         $data['entry_order_myparcel_shipment_type']     = $lang->get('entry_order_myparcel_shipment_type');
@@ -237,6 +254,7 @@ class MyParcel_View extends MyParcel_View_Core
         $data['entry_order_myparcel_text_home_address_only'] = $lang->get('entry_order_myparcel_text_home_address_only');
         $data['entry_order_myparcel_text_signature_on_delivery'] = $lang->get('entry_order_myparcel_text_signature_on_delivery');
         $data['entry_order_myparcel_text_return_if_no_answer'] = $lang->get('entry_order_myparcel_text_return_if_no_answer');
+        $data['entry_order_myparcel_text_age_check'] = $lang->get('entry_order_myparcel_text_age_check');
         $data['entry_order_myparcel_text_insured_home'] = $lang->get('entry_order_myparcel_text_insured_home');
         $data['entry_order_myparcel_text_standar_insurance'] = $lang->get('entry_order_myparcel_text_standar_insurance');
         $data['entry_order_myparcel_text_insurance'] = $lang->get('entry_order_myparcel_text_insurance');
@@ -331,7 +349,8 @@ class MyParcel_View extends MyParcel_View_Core
          */
         $registry = MyParcel::$registry;
         $lang = $registry->get('language');
-        $lang->load(MyParcel()->getMyparcelModulePath());
+        //prevent overriding heading_title
+        MyParcel()->loadMyparcelLang($lang);
         // Load other packages
         $url = $registry->get('url');
         $session = $registry->get('session');
@@ -402,7 +421,9 @@ class MyParcel_View extends MyParcel_View_Core
         $helper = MyParcel()->helper;
         
         $lang = $registry->get('language');
-        $lang->load(MyParcel()->getMyparcelModulePath());
+        //prevent overriding heading_title
+        MyParcel()->loadMyparcelLang($lang);
+
         $loader = $registry->get('load');
         $loader->model(MyParcel()->getModelPath('shipment'));
         $loader->model(MyParcel()->getModelPath('shipping'));
@@ -510,7 +531,8 @@ class MyParcel_View extends MyParcel_View_Core
     {
         $registry = MyParcel::$registry;
         $lang = $registry->get('language');
-        $lang->load(MyParcel()->getMyparcelModulePath());
+        //prevent overriding heading_title
+        MyParcel()->loadMyparcelLang($lang);
         return $lang->get('text_column_myparcel_header');
     }
 
@@ -522,7 +544,9 @@ class MyParcel_View extends MyParcel_View_Core
         }
         $registry = MyParcel::$registry;
         $lang = $registry->get('language');
-        $lang->load(MyParcel()->getMyparcelModulePath());
+        //prevent overriding heading_title
+        MyParcel()->loadMyparcelLang($lang);
+
         $emailTrackTrace = array();
         $api = MyParcel()->api;
         $tracktrace_links = $api->getTracktraceLinks ( $order_id );
@@ -561,6 +585,8 @@ class MyParcel_View extends MyParcel_View_Core
     **/
     function iframe_delivery_options($order_info = false)
     {
+        global $config;
+
         $delivery_enable = intval(MyParcel()->settings->checkout->enable_delivery);
         if (empty($delivery_enable)) {
             return '';
@@ -599,6 +625,9 @@ class MyParcel_View extends MyParcel_View_Core
         $belgium_enabled = intval(MyParcel()->settings->checkout->belgium_enabled);
         $country_allowed = ($myparcel_country == 'NL' || ($myparcel_country == 'BE' && $belgium_enabled)) ? true : false;
 
+        // Find out if journal2 theme is active
+        $config = empty($config) ? $registry->get('config') : $config;
+        $data['theme'] = !empty($config->get('config_template')) ? $config->get('config_template') : $config->get('config_theme');
         if (!$order_info && !$country_allowed && !MyParcel()->helper->isModuleExist('d_quickcheckout', true)) {
             return '';
         }

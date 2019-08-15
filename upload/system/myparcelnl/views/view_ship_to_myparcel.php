@@ -104,7 +104,19 @@
 			<td class="oc_option_cost">
 			</td>
 		</tr>
-
+		</tr>
+            <tr>
+                <td>
+                    <?php
+                    $checked = (isset($export_settings['age_check']) && ($export_settings['age_check']==1))?'checked="checked"':'';
+                    ?>
+                    <input type="hidden" name="myparcel_options[<?php echo $order_id; ?>][age_check]" value="0" />
+                    <input <?php echo $checked; ?> type="checkbox" name="myparcel_options[<?php echo $order_id; ?>][age_check]" value="1" class=""><?php echo $data['entry_order_myparcel_text_age_check']; ?>
+                </td>
+                <td class="oc_option_cost">
+                </td>
+            </tr>
+		<tr>
 		<tr>
 			<td>
 				<?php
@@ -138,8 +150,8 @@
 			<td>
 				<select name="myparcel_options[<?php echo $order_id; ?>][insured_amount_selectbox]" class="insured_amount">
 					<?php foreach ($data['insured_amounts'] as $key => $insured_amount) : ?>
-					<?php $selected = ((($export_settings['insured_amount_selectbox']) == $key) ? 'selected="selected"' : '' ) ?>
-					<option <?php echo $selected ?> value="<?php echo $key; ?>"><?php echo $insured_amount; ?></option>
+                        <?php $selected = ((!empty($export_settings['insured_amount_selectbox']) && ($export_settings['insured_amount_selectbox']) == $key) ? 'selected="selected"' : '' ) ?>
+                        <option <?php echo $selected ?> value="<?php echo $key; ?>"><?php echo $insured_amount; ?></option>
 					<?php endforeach; ?>
 				</select>
 			</td>

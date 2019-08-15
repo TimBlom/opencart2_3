@@ -33,6 +33,8 @@ class MyParcel_Api extends MyParcel_Curl
 	 */
 	public function addShipments ( $shipment_data, $type = 'standard' )
 	{
+	    $shipment_data = $this->validateAndFixData($shipment_data);
+
 		$endpoint = 'shipments';
 		// define content type
 		switch ($type) {
@@ -58,10 +60,12 @@ class MyParcel_Api extends MyParcel_Curl
 
 		$json = json_encode( $data );
 
+		$oc_version =  (defined('VERSION')) ? VERSION : '2.3.0.2';
+
 		$headers = array(
 			"Content-type: " . $content_type . "; charset=UTF-8",
 			'Authorization: basic '. base64_encode("{$this->key}"),
-            'User-Agent:' .  'OpenCart/2.3.0.2'
+            'User-Agent:' .  'OpenCart/'.$oc_version,
 		);
 
 		$request_url = $this->api_domain . $endpoint;
@@ -282,6 +286,18 @@ class MyParcel_Api extends MyParcel_Curl
 
 		return $response;
 	}
+
+	function validateAndFixData($shipment_data)
+    {
+        if (!empty($shipment_data)) {
+            foreach ($shipment_data as &$shipment_data_item) {
+                if (!empty($shipment_data_item['options']['label_description'])) {
+                    $shipment_data_item['options']['label_description'] = substr($shipment_data_item['options']['label_description'], 0, 44);
+                }
+            }
+        }
+        return $shipment_data;
+    }
 }
 	$registry = MyParcel::$registry;
 	$config = $registry->get('config');

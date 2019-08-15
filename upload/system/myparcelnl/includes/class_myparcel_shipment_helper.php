@@ -50,51 +50,36 @@ class MyParcel_Shipment_Helper
             'phone'			=> !empty($connect_phone) ? $order['telephone'] : '',
         );
 
-        if ( $order['shipping_iso_code_2'] == 'NL' ) {
-            /** @var MyParcel_Helper $helper * */
-            $helper = MyParcel()->helper;
+        $use_addition_address_as_number_suffix = MyParcel()->settings->general->use_addition_address_as_number_suffix;
 
-            if (!empty($order['shipping_address_2']) && is_numeric(($order['shipping_address_2']))) {
-                $order['shipping_address_1'] = $order['shipping_address_1'] . ' ' . $order['shipping_address_2'];
-            }
+		// MyParcel_Helper $helper
+		$helper = MyParcel()->helper;
+        $iso_code = @ $order['shipping_iso_code_2'];
+		
+        switch ($iso_code) {
+			default:
+                if ((!empty($order['shipping_address_2']) && is_numeric(($order['shipping_address_2'])) && !$use_addition_address_as_number_suffix) || !$use_addition_address_as_number_suffix) {
+					$order['shipping_address_1'] = $order['shipping_address_1'] . ' ' . $order['shipping_address_2'];
+				}
 
-            $address_parts = $helper->getAddressComponents($order['shipping_address_1']);
+				$address_parts = $helper->getAddressComponents($order['shipping_address_1']);
 
-            $address_intl = array(
-                'street' => isset($address_parts['street']) ? $address_parts['street'] : '',
-                'number' => isset($address_parts['house_number']) ? $address_parts['house_number'] : '',
-                'number_suffix' => isset($address_parts['number_addition']) ? $address_parts['number_addition'] : '',
-                'postal_code' => $order['shipping_postcode'],
-            );
+				if ($use_addition_address_as_number_suffix == 1) {
+					$number_addition = isset($order['shipping_address_2']) ? $order['shipping_address_2'] : '';
+				} elseif ($use_addition_address_as_number_suffix == 2) {
+					$address_parts['street'] = isset($order['shipping_address_1']) ? $order['shipping_address_1'] : '';
+					$address_parts['house_number'] = isset($order['shipping_address_2']) ? $order['shipping_address_2'] : '';
+					$number_addition = isset($order['shipping_custom_field']['address_3']) ? $order['shipping_custom_field']['address_3'] : '';
+				} else {
+					$number_addition = isset($address_parts['number_addition']) ? $address_parts['number_addition'] : '';
+				}
 
-        } elseif ($order['shipping_iso_code_2'] == 'BE') {
-
-            /** @var MyParcel_Helper $helper * */
-            $helper = MyParcel()->helper;
-            if (!empty($order['shipping_address_2']) && is_numeric(($order['shipping_address_2']))) {
-                $order['shipping_address_1'] = $order['shipping_address_1'] . ' ' . $order['shipping_address_2'];
-            }
-            $address_parts = $helper->getAddressComponents($order['shipping_address_1']);
-
-            $address_intl = array(
-                'street' => isset($address_parts['street']) ? $address_parts['street'] : '',
-                'number' => isset($address_parts['house_number']) ? $address_parts['house_number'] : '',
-                'number_suffix' => isset($address_parts['number_addition']) ? $address_parts['number_addition'] : '',
-                'postal_code' => $order['shipping_postcode'],
-            );
-
-        } else {
-
-            $street = $order['shipping_address_1'] . (!empty($order['shipping_address_2']) ? ' ' . $order['shipping_address_2'] : '');
-
-            $address_intl = array(
-                'postal_code'				=> $order['shipping_postcode'],
-                'street'					=> $street,
-                'street_additional_info'	=> '',
-                'region'                    => isset($order['shipping_zone']) ? $order['shipping_zone'] : '',
-                'phone'                     => '',
-                'company'                   => ''
-            );
+				$address_intl = array(
+					'street' => isset($address_parts['street']) ? $address_parts['street'] : '',
+					'number' => isset($address_parts['house_number']) ? $address_parts['house_number'] : '',
+					'number_suffix' => $number_addition,
+					'postal_code' => $order['shipping_postcode'],
+				);
         }
 
         $address = array_merge( $address, $address_intl);
@@ -146,6 +131,9 @@ class MyParcel_Shipment_Helper
                             break;
                         }
                     }
+
+                    // If can't find order shipping code in package type shipping methods
+                    $package_type = !empty($package_type) ? $package_type : MyParcel::PACKAGE_TYPE_STANDARD;
                 }
             } else {
                 $package_type = MyParcel::PACKAGE_TYPE_STANDARD; // 1. package | 2. mailbox package | 3. letter
@@ -180,6 +168,7 @@ class MyParcel_Shipment_Helper
                 'insured'           => 0,
                 'insured_amount_selectbox' => '',
                 'insured_amount'	=> 0,
+                'age_check'         => 0
             );
             $options = array_merge($defaults, $saved_export_settings);
 
@@ -338,7 +327,14 @@ class MyParcel_Shipment_Helper
                 }
             }
         }
-
+        if($shipping_country_code == 'NL' && (((isset($default_export_settings['age_check'])) && $default_export_settings['age_check'] == 1) || ((isset($saved_export_settings['age_check'])) && $saved_export_settings['age_check'] == 1))){
+            $options['age_check'] = 1;
+            $options['only_recipient'] = 1;
+            $options['signature'] = 1;
+        }
+        else{
+            $options['age_check'] = 0;
+        }
         return $options;
     }
 
@@ -922,7 +918,7 @@ class MyParcel_Shipment_Helper
                         'value' => $value
                     );
 
-                    if(version_compare(VERSION, '2.0.0.0', '>=') && version_compare(VERSION, '2.2.0.0', '<')) {
+                    if((version_compare(VERSION, '1.5.4', '>=') || version_compare(VERSION, '2.0.0.0', '>=')) && version_compare(VERSION, '2.2.0.0', '<')) {
                         $product_option_value_info = $this->getProductOptionValue($product['product_id'], $option['product_option_value_id']);
                     } else {
                         $product_option_value_info = $model_product->getProductOptionValue($product['product_id'], $option['product_option_value_id']);

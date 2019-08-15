@@ -136,8 +136,8 @@ class ModelMyparcelnlShipment extends Model
 		$shipment_id = $shipment['shipment_id'];
 		$shipments = array();
 		$shipments[$shipment_id] = $shipment;
-
-		if ( !empty(intval(MyParcel()->settings->general->keep_old_shipments)) ) {
+        $keep_old_shipments =intval(MyParcel()->settings->general->keep_old_shipments);
+		if ( !empty($keep_old_shipments) ) {
 
 			if ( $old_shipments = $this->getSavedMyParcelShipments($order_id) ) {
 

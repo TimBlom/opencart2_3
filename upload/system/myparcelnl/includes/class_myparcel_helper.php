@@ -285,7 +285,28 @@ class MyParcel_Helper
 
     function _splitStreet($fullStreet)
     {
-        $split_street_regex = '~(?P<street>.*?)\s?(?P<street_suffix>(?P<number>[\d]+)-?(?P<number_suffix>[a-zA-Z/\s]{0,5}$|-?[0-9/]{0,5}$|\s[a-zA-Z]{1}-?[0-9]{0,3}$))$~';
+        //$split_street_regex = '~(?P<street>.*?)\s?(?P<street_suffix>(?P<number>[\d]+)-?(?P<number_suffix>[a-zA-Z/\s]{0,5}$|-?[0-9/]{0,5}$|\s[a-zA-Z]{1}-?[0-9]{0,3}$))$~';
+        $split_street_regex =  '~(?P<street>.*?)'.                  // The rest belongs to the street
+
+            '\s?'.                               // Separator between street and number
+
+            '(?P<number>\d{1,4})'.               // Number can contain a maximum of 4 numbers
+
+            '[\/\s\-]{0,2}'.                      // Separators between number and addition
+
+            '(?P<number_suffix>'.
+
+            '[a-zA-Z]{1}\d{1,3}|'.           // Numbers suffix starts with a letter followed by numbers or
+
+            '-\d{1,4}|'.                     // starts with - and has up to 4 numbers or
+
+            '\d{2}\w{1,2}|'.                 // starts with 2 numbers followed by letters or
+
+            '[a-zA-Z]{1}[a-zA-Z\s]{0,3}'.    // has up to 4 letters with a space
+
+            ')?$~';
+
+
         $fullStreet = preg_replace("/[\n\r]/", "", $fullStreet);
         $result = preg_match($split_street_regex, $fullStreet, $matches);
 
@@ -331,7 +352,7 @@ class MyParcel_Helper
 
     function getAddressComponents($address)
     {
-        $ret = [];
+        $ret = array();
 
         $address = trim($address);
         $is_single_word = (strpos($address, ' ') === false) ? true : false;
@@ -344,28 +365,32 @@ class MyParcel_Helper
             return $ret;
         }
 
-        $parts = explode(' ', $address);
-        if (!empty($parts) && !is_numeric($parts[count($parts) - 1])) {
-            $ret['street']          = $address;
-            $ret['house_number']    = '';
-            $ret['number_addition'] = '';
-
-            return $ret;
-        }
+//        $parts = explode(' ', $address);
+//        if (!empty($parts) && !is_numeric($parts[count($parts) - 1])) {
+//            $ret['street']          = $address;
+//            $ret['house_number']    = '';
+//            $ret['number_addition'] = '';
+//
+//            return $ret;
+//        }
 
         $matches = $this->_splitStreet($address);
 
-        if (!empty($matches[2]))
-        {
-            $ret['street']          = trim($matches[1]);
-            $ret['house_number']    = trim($matches[3]);
-            $ret['number_addition'] = trim($matches[4]);
-        }
-        else // no street part
-        {
-            $ret['street'] = $address;
+        if (isset($matches['street'])) {
+            $ret['street'] = $matches['street'];
         }
 
+        if (isset($matches['number'])) {
+            $ret['house_number']    = trim($matches['number']);
+        }
+
+        if (isset($matches['number_suffix'])) {
+            $ret['number_addition']    = trim($matches['number_suffix']);
+        }
+
+        if (empty($ret['street'])) {
+            $ret['street'] = $address;
+        }
         /** START @Since the fix for negative house number (64-69) **/
         if (strlen($ret['street']) && substr($ret['street'], -1) == '-') {
             $ret['street'] = str_replace(' -', '', $ret['street']);
@@ -379,7 +404,7 @@ class MyParcel_Helper
         return $ret;
     }
 
-    public function getShippingOrder($order_id) 
+    public function getShippingOrder($order_id)
     {
         $registry = MyParcel::$registry;
         $db = $registry->get('db');
@@ -442,17 +467,17 @@ class MyParcel_Helper
      * @param Array $errors
      * @return HTML content of errors
      *
-    **/
+     **/
     function renderErrors($errors)
     {
         if (empty($errors)) {
             return '';
         }
         ob_start();
-?>
+        ?>
         <div id="myparcel-error-messages-wrapper" class="alert alert-danger">
             <ul>
-<?php
+                <?php
                 foreach ($errors as $error)
                 {
                     ?>
@@ -462,10 +487,10 @@ class MyParcel_Helper
                     </li>
                     <?php
                 }
-?>
+                ?>
             </ul>
         </div>
-<?php
+        <?php
         $html = ob_get_clean();
 
         return $html;
@@ -612,6 +637,8 @@ class MyParcel_Helper
         /*tab generel setting*/
         $data['entry_tab_1_api'] = $language->get('entry_tab_1_api');
         $data['entry_tab_1_api_setting'] = $language->get('entry_tab_1_api_setting');
+        $data['entry_tab_1_system_setting'] = $language->get('entry_tab_1_system_setting');
+        $data['entry_tab_1_admin_folder'] = $language->get('entry_tab_1_admin_folder');
         $data['entry_tab_1_generel_setting'] = $language->get('entry_tab_1_generel_setting');
         $data['entry_tab_1_label_display'] = $language->get('entry_tab_1_label_display');
         $data['entry_tab_1_radio_download_pdf'] = $language->get('entry_tab_1_radio_download_pdf');
@@ -627,6 +654,10 @@ class MyParcel_Helper
         $data['entry_tab_1_automatic_order_status'] = $language->get('entry_tab_1_automatic_order_status');
         $data['entry_tab_1_keep_old_shipments'] = $language->get('entry_tab_1_keep_old_shipments');
         $data['entry_tab_1_checkbox_keep_old_shipments'] = $language->get('entry_tab_1_checkbox_keep_old_shipments');
+        $data['entry_tab_1_label_use_addition_address_as_number_suffix'] = $language->get('entry_tab_1_label_use_addition_address_as_number_suffix');
+        $data['entry_tab_1_checkbox_use_address1_and_address2'] = $language->get('entry_tab_1_checkbox_use_address1_and_address2');
+        $data['entry_tab_1_checkbox_use_address2_as_number_suffix'] = $language->get('entry_tab_1_checkbox_use_address2_as_number_suffix');
+        $data['entry_tab_1_checkbox_use_address3_as_number_suffix'] = $language->get('entry_tab_1_checkbox_use_address3_as_number_suffix');
         $data['entry_tab_1_diagnostic_tools'] = $language->get('entry_tab_1_diagnostic_tools');
         $data['entry_tab_1_log_api_communication'] = $language->get('entry_tab_1_log_api_communication');
         $data['entry_tab_1_checkbox_log_api_communication'] = $language->get('entry_tab_1_checkbox_log_api_communication');
@@ -648,6 +679,8 @@ class MyParcel_Helper
         $data['entry_tab_2_checkbox_return_no_answer']       = $language->get('entry_tab_2_checkbox_return_no_answer');
         $data['entry_tab_2_title_insured_shipment']          = $language->get('entry_tab_2_title_insured_shipment');
         $data['entry_tab_2_title_insured_amount']            = $language->get('entry_tab_2_title_insured_amount');
+        $data['entry_tab_2_title_age_check']                 = $language->get('entry_tab_2_title_age_check');
+        $data['entry_tab_2_title_age_check_desrition']       = $language->get('entry_tab_2_title_age_check_desrition');
         $data['entry_tab_2_title_insured_amount_custom']     = $language->get('entry_tab_2_title_insured_amount_custom');
         $data['entry_tab_2_checkbox_insured_shipment']       = $language->get('entry_tab_2_checkbox_insured_shipment');
         $data['entry_tab_2_title_label_description']         = $language->get('entry_tab_2_title_label_description');
@@ -742,7 +775,7 @@ class MyParcel_Helper
      * @param string $module
      * @param boolean $check_status
      * @return boolean
-    **/
+     **/
 
     function isModuleExist($module, $check_status = false)
     {
@@ -773,7 +806,7 @@ class MyParcel_Helper
 
         if (version_compare(VERSION, '2.0.0.0', '>=')) {
             $address_data = isset($session->data['shipping_address']) ? $session->data['shipping_address'] : (isset($session->data['payment_address']) ? $session->data['payment_address'] : null);
-            $country_code = $address_data['iso_code_2'];
+            $country_code = !empty($address_data) ? $address_data['iso_code_2'] : '';//'NL';
         } else {
             if (MyParcel()->helper->isModuleExist('d_quickcheckout', true)) {
                 $address_data['address_1'] = $session->data['shipping_address']['address_1'];
@@ -802,7 +835,17 @@ class MyParcel_Helper
 
         return $country_code;
     }
+    public function getTaxRate($tax_rate_id){
+        $registry = MyParcel::$registry;
+        $db = $registry->get('db');
+        $tax_query =$db->query("SELECT * FROM " . DB_PREFIX . "tax_rate WHERE tax_rate_id = '" . (int)$tax_rate_id . "'");
 
+        if ($tax_query->num_rows) {
+            return $tax_query->row;
+        } else {
+            return false;
+        }
+    }
 }
 
 return new MyParcel_Helper();

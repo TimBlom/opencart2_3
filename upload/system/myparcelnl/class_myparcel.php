@@ -19,6 +19,11 @@ class MyParcel
     const PACKAGE_TYPE_MAILBOX = 2;
     const PACKAGE_TYPE_LETTER = 3;
 
+    /**
+     * MyParcel constructor.
+     * @param null $registry
+     * @throws Exception
+     */
     private function __construct($registry = null)
     {
         if (is_null(self::$registry )) {
@@ -31,7 +36,8 @@ class MyParcel
 
             if (empty($this->lang)) {
                 $this->lang = $registry->get('language');
-                $this->lang->load($this->getMyparcelModulePath());
+                //prevent overriding heading_title
+                $this->loadMyparcelLang($this->lang);
             }
             $this->shipment = require_once (dirname(__FILE__) . '/includes/class_myparcel_shipment.php');
             $this->notice = require_once (dirname(__FILE__) . '/includes/class_myparcel_notice.php');
@@ -106,7 +112,7 @@ class MyParcel
 
     function getRootUrl()
     {
-        return MyParcel()->helper->trailingslashit(str_replace('/admin', '', $this->getHomeUrl()));
+        return MyParcel()->helper->trailingslashit(str_replace('/' . $this->getAdminFolderName(), '', $this->getHomeUrl()));
     }
 
     function getHomeUrl()
@@ -116,7 +122,7 @@ class MyParcel
         $url = $config->get('config_url');
         $ssl = $config->get('config_ssl');
 
-        if (isset($this->request->server['HTTPS']) && (($this->request->server['HTTPS'] == 'on') || ($this->request->server['HTTPS'] == '1'))) {
+        if (isset($_SERVER['HTTPS']) && (($_SERVER['HTTPS'] == 'on') || ($_SERVER['HTTPS'] == '1'))) {
             return $this->helper->trailingslashit($ssl ? $ssl : HTTPS_SERVER);
         }
         return $this->helper->trailingslashit($url ? $url : HTTP_SERVER);
@@ -139,12 +145,12 @@ class MyParcel
 
     function getPluginUrl()
     {
-        return $this->getHomeUrl() . 'admin/index.php?route=' . $this->getModulePath() . '/';
+        return $this->getHomeUrl() . $this->getAdminFolderName() . '/index.php?route=' . $this->getModulePath() . '/';
     }
 
     function getRouteUrl($route)
     {
-        return $this->getHomeUrl() . 'admin/index.php?route=' . $route . '/';
+        return $this->getHomeUrl() . $this->getAdminFolderName() . '/index.php?route=' . $route . '/';
     }
 
     function getLogsUrl($filename = 'myparcel_log.txt')
@@ -161,10 +167,20 @@ class MyParcel
 
     function getRootDir()
     {
-        $root_dir = str_replace('/admin', '', DIR_APPLICATION);
+        $root_dir = str_replace('/' . $this->getAdminFolderName(), '', DIR_APPLICATION);
         /** @var MyParcel_Helper $helper **/
         $helper = $this->helper;
         return $helper->trailingslashit($root_dir);
+    }
+
+    function getAdminFolderName()
+    {
+        $admin_folder = MyParcel()->settings->general->admin_folder;
+
+        if ($admin_folder) {
+            return MyParcel()->settings->general->admin_folder;
+        }
+        return 'admin';
     }
 
     function getViewDir($view = null)
@@ -189,6 +205,17 @@ class MyParcel
                 break;
             default:
                 $document->addScript($this->getJsUrl() . $script_name . '.js');
+        }
+    }
+
+    function loadMyparcelLang($lang = null)
+    {
+        if ($lang instanceof Language) {
+            $old_heading_title = $lang->get('heading_title');
+            $lang->load(MyParcel()->getMyparcelModulePath());
+            if (!empty($old_heading_title) && $old_heading_title != 'heading_title') {
+                $lang->set('heading_title', $old_heading_title);
+            }
         }
     }
 }

@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-* Modified in 1.0.4 to:
+* Modified in 1.1.9 to:
  - Fix the bug that order lang is overwritten by MyParcelNL lang
 -->
 <modification>
     <name>MyParcel NL</name>
-    <version>1.0.9</version>
+    <version>1.1.9</version>
     <code>MyParcelNL</code>
     <author>MyParcel NL</author>
-    <link>http://www.myparcelnl.com</link>
+    <link>https://www.myparcel.nl/</link>
 
     <!-- checked with compatible with Opencart 1x-->
     <!-- yes is compatible, no is no compatible -->
@@ -98,10 +98,11 @@
     <!-- ***************************************************** -->
     <file path="admin/view/template/sale/order_info.tpl"><!-- checked -->
         <operation><!-- yes -->
-            <search regex="true" limit="1"><![CDATA[/<\?php if \(\$shipping_method\) \{ \?>(?s)(.*?)<\?php } \?>/]]></search>
-            <add offset="1"><![CDATA[
-                <?php if ($shipping_method) { ?>$1$2<?php } ?>
-
+            <search regex="true"><![CDATA[/<td class=\"text-left\"><\?php echo \$shipping_address; \?><\/td>(.+?)<\/tr>/s]]></search>
+            <add position="after"><![CDATA[
+                <td class="text-left"><?php echo $shipping_address; ?></td>
+              <?php } ?>
+            </tr>
                 <?php /* -- MyParcel Hooks -- */ ?>
 
                 <?php echo $myparcel_actions ?>
@@ -136,7 +137,7 @@
         <operation><!-- yes -->
             <search><![CDATA[</head>]]></search>
             <add position="before"><![CDATA[
-                <?php echo $myparcel_order_header; ?>
+                <?php echo !empty($myparcel_order_header) ? $myparcel_order_header : ''; ?>
                 <script>var is_opencart1 = false;</script>
             ]]>
             </add>
@@ -159,6 +160,9 @@
             ]]></add>
         </operation>
 
+
+
+
         <operation><!-- yes -->
             <search><![CDATA[
              public function info() {
@@ -178,6 +182,7 @@
                 $this->load->model('myparcelnl/helper');
 				$this->document->addStyle($this->model_myparcelnl_helper->getCssUrl() . 'order.css');
 				$this->document->addScript($this->model_myparcelnl_helper->getJsUrl() . 'order.js');
+				$data['use_addition_address'] =  Myparcel($this->registry)->settings->general->use_addition_address_as_number_suffix;
             ]]></add>
         </operation>
 
@@ -203,7 +208,7 @@
         <!--
             Add the contents from controller in order to render in order_info.tpl
         -->
-        <operation><!-- no -->
+        <operation>
             <search><![CDATA[$customer_group_info = $this->model_customer_customer_group->getCustomerGroup($order_info['customer_group_id']);]]></search>
             <add position="after"><![CDATA[
                 $data['tracktrace'] = $this->model_myparcelnl_helper->getContent('myparcel_tracktrace', array('order_id' => $this->request->get['order_id']));
@@ -215,8 +220,18 @@
             ]]></add>
         </operation>
 
-        <operation><!-- no -->
+        <operation>
             <search><![CDATA[$data['invoice'] = $this->url->link('sale/order/invoice', 'token=' . $this->session->data['token'], true);]]></search>
+            <add position="before"><![CDATA[
+                $this->load->model('myparcelnl/helper');
+                $data['print_batch'] = $this->model_myparcelnl_helper->getContent('print_batch', array());
+                $data['export_batch'] = $this->model_myparcelnl_helper->getContent('export_batch', array());
+                $data['export_print_batch'] = $this->model_myparcelnl_helper->getContent('export_print_batch', array());
+            ]]></add>
+        </operation>
+
+        <operation>
+            <search><![CDATA[$data['invoice'] = $this->url->link('sale/order/invoice', 'token=' . $this->session->data['token'], 'SSL');]]></search>
             <add position="before"><![CDATA[
                 $this->load->model('myparcelnl/helper');
                 $data['print_batch'] = $this->model_myparcelnl_helper->getContent('print_batch', array());
@@ -293,7 +308,7 @@
             <search regex="true"><![CDATA[/<\?php echo \$download; \?>(?s)(.*?)<\?php } \?>/]]></search>
             <add><![CDATA[
                 <?php echo $download; ?>">$1<?php } ?>
-                <p><?php if(!empty($tracktrace)){echo $tracktrace['text'].' '.implode(', ', $tracktrace['code']);}  ?></p>
+                <?php if(!empty($tracktrace)){echo '<p>'.$tracktrace['text'].' '.implode(', ', $tracktrace['code']).'</p>';}  ?>
             ]]></add>
         </operation>
     </file>
@@ -305,7 +320,7 @@
                 $this->load->model('myparcelnl/helper');
                 $tracktrace = $this->model_myparcelnl_helper->getContent('myparcel_email_tracktrace', array('order_id' => $order_id));
                 ?>
-                <p><?php if(!empty($tracktrace)){$message .= $tracktrace['text'].' '.implode(', ', $tracktrace['code']);}  ?></p>
+                <?php if(!empty($tracktrace)){$message .= '<p>'.$tracktrace['text'].' '.implode(', ', $tracktrace['code']).'</p>';}  ?>
                 <?php
                 $message .= "\n\n";
             ]]></add>
@@ -392,6 +407,380 @@
             <add><![CDATA[
                 url:$1route=api/shipping/methods$2,
                 data: $('input[name=\'order_id\']'),
+            ]]></add>
+        </operation>
+        <operation>
+            <search><![CDATA[<input type="text" name="address_2" value="<?php echo $payment_address_2; ?>" id="input-payment-address-2" class="form-control" />]]></search>
+            <add position="after"><![CDATA[
+            <?php if( !empty( $use_addition_address ) && $use_addition_address == 2 ): ?>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-payment-address-3">Address 3</label>
+            <div class="col-sm-10">
+                <input type="text" name="custom_field[address_3]" value="<?php echo isset($payment_custom_field['address_3']) ? $payment_custom_field['address_3'] : ''; ?>" id="input-payment-address-3" class="form-control" />
+                <?php endif; ?>
+            ]]></add>
+        </operation>
+        <operation>
+            <search><![CDATA[<input type="text" name="address_2" value="<?php echo $shipping_address_2; ?>" id="input-shipping-address-2" class="form-control" />]]></search>
+            <add position="after"><![CDATA[
+            <?php if( !empty( $use_addition_address ) && $use_addition_address == 2 ): ?>
+            </div>
+        </div>
+        <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-shipping-address-3">Address 3</label>
+                <div class="col-sm-10">
+                  <input type="text" name="custom_field[address_3]" value="<?php echo isset($shipping_custom_field['address_3']) ? $shipping_custom_field['address_3'] : ''; ?>" id="input-shipping-address-3" class="form-control" />
+                <?php endif; ?>
+            ]]></add>
+        </operation>
+    </file>
+
+    <!-- ________________ catalog/view/theme/journal2/template/journal2/checkout/address_form.tpl ________________ -->
+    <!-- _______________________ All Address Form Info Template _______________________ -->
+    <!-- _________________________________________________________________________ -->
+    <file path="catalog/view/theme/journal2/template/journal2/checkout/address_form.tpl">
+        <operation>
+            <search><![CDATA[id="input-<?php echo $type; ?>-address-2" class="form-control"/>]]></search>
+            <add position="after"><![CDATA[
+            <?php if( $use_addition_address and use_addition_address == 2 ): ?>
+            </div>
+                 <div class="form-group address-3-input">
+                    <label class="col-sm-2 control-label" for="input-<?php echo $type; ?>-address-3">Address 3</label>
+                    <input type="text" name="<?php echo $type; ?>_custom_field[address][address_3]" value="<?php echo Journal2Utils::getProperty($order_data, $type . '_custom_field.address.address_3'); ?>" placeholder="Address 3" id="input-<?php echo $type; ?>-address-3" class="form-control"/>
+            <?php endif; ?>
+            ]]></add>
+        </operation>
+    </file>
+    <!-- ________________ catalog/view/theme/*/template/checkout/guest.tpl ________________ -->
+    <!-- _______________________ Billing Info Guest Template _______________________ -->
+    <!-- _________________________________________________________________________ -->
+    <file path="catalog/view/theme/*/template/checkout/guest.tpl">
+        <operation>
+            <search><![CDATA[<input type="text" name="address_2" value="<?php echo $address_2; ?>" placeholder="<?php echo $entry_address_2; ?>" id="input-payment-address-2" class="form-control" />]]></search>
+            <add position="after"><![CDATA[
+            <?php if( !empty( $use_addition_address ) && $use_addition_address == 2 ): ?>
+            </div>
+                <div class="form-group">
+                    <label class="control-label" for="input-payment-address-3">Address 3</label>
+                    <input type="text" name="custom_field[address][address_3]" value="<?php echo !empty($guest_custom_field['address_3']) ? $guest_custom_field['address_3']: ''; ?>" placeholder="Address 3" id="input-payment-address-3" class="form-control" />
+            <?php endif; ?>
+            ]]></add>
+        </operation>
+    </file>
+
+    <!-- ________________ catalog/controller/checkout/guest.php ________________ -->
+    <!-- _______________________ Billing Info Guest Controller _______________________ -->
+    <!-- _________________________________________________________________________ -->
+    <file path="catalog/controller/checkout/guest.php">
+        <operation>
+            <search><![CDATA[$this->load->language('checkout/checkout');]]></search>
+            <add position="before"><![CDATA[
+            $this->load->model('myparcelnl/helper');
+            $data['use_addition_address'] =  MyParcel($this->registry)->settings->general->use_addition_address_as_number_suffix;
+            ]]></add>
+        </operation>
+        <operation>
+            <search><![CDATA[$json['error']['address_1'] = $this->language->get('error_address_1');]]></search>
+            <add position="after"><![CDATA[
+            }
+            $this->load->model('myparcelnl/helper');
+                $use_addition_address =  MyParcel($this->registry)->settings->general->use_addition_address_as_number_suffix;
+                if ($use_addition_address == 2 ) {
+                    if (empty(trim($this->request->post['address_2']))) {
+                        $json['error']['address_2'] = MyParcel()->lang->get('error_address_2');
+                    }
+            ]]></add>
+        </operation>
+    </file>
+
+    <!-- ________________ catalog/view/theme/*/template/checkout/guest_shipping.tpl ________________ -->
+    <!-- _______________________ Shipping Info Guest Template _______________________ -->
+    <!-- _________________________________________________________________________ -->
+    <file path="catalog/view/theme/*/template/checkout/guest_shipping.tpl">
+        <operation>
+            <search><![CDATA[<input type="text" name="address_2" value="<?php echo $address_2; ?>" placeholder="<?php echo $entry_address_2; ?>" id="input-shipping-address-2" class="form-control" />]]></search>
+            <add position="after"><![CDATA[
+            <?php if( !empty( $use_addition_address ) && $use_addition_address == 2 ): ?>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-shipping-address-3">Address 3</label>
+            <div class="col-sm-10">
+              <input type="text" name="custom_field[address][address_3]" value="<?php echo !empty($address_custom_field['address_3']) ? $address_custom_field['address_3'] : ''; ?>" placeholder="Address 3" id="input-shipping-address-3" class="form-control" />
+            <?php endif; ?>
+            ]]></add>
+        </operation>
+    </file>
+
+    <!-- ________________ catalog/controller/checkout/guest.php ________________ -->
+    <!-- _______________________ Billing Info Guest Controller _______________________ -->
+    <!-- _________________________________________________________________________ -->
+    <file path="catalog/controller/checkout/guest_shipping.php">
+        <operation>
+            <search><![CDATA[$this->load->language('checkout/checkout');]]></search>
+            <add position="before"><![CDATA[
+            $this->load->model('myparcelnl/helper');
+            $data['use_addition_address'] =  MyParcel($this->registry)->settings->general->use_addition_address_as_number_suffix;
+            ]]></add>
+        </operation>
+        <operation>
+            <search><![CDATA[$json['error']['address_1'] = $this->language->get('error_address_1');]]></search>
+            <add position="after"><![CDATA[
+            }
+            $this->load->model('myparcelnl/helper');
+                $use_addition_address =  MyParcel($this->registry)->settings->general->use_addition_address_as_number_suffix;
+                if ($use_addition_address == 2 ) {
+                    if (empty(trim($this->request->post['address_2']))) {
+                        $json['error']['address_2'] = MyParcel()->lang->get('error_address_2');
+                    }
+            ]]></add>
+        </operation>
+    </file>
+
+    <!-- ________________ catalog/view/theme/*/template/account/register.tpl ________________ -->
+    <!-- _______________________ Account Info register Template _______________________ -->
+    <!-- _________________________________________________________________________ -->
+    <file path="catalog/view/theme/*/template/account/register.tpl">
+        <operation>
+            <search><![CDATA[<input type="text" name="address_2" value="<?php echo $address_2; ?>" placeholder="<?php echo $entry_address_2; ?>" id="input-address-2" class="form-control" />]]></search>
+            <add position="after"><![CDATA[
+            <?php if( !empty( $use_addition_address ) && $use_addition_address == 2 ): ?>
+
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-address-3">Address 3</label>
+            <div class="col-sm-10">
+              <input type="text" name="custom_field[address][address_3]" value="<?php echo !empty($register_custom_field['address_3']) ? $register_custom_field['address_3'] : ''; ?>" placeholder="Address 3" id="input-address-3" class="form-control" />
+            <?php endif; ?>
+             ]]></add>
+        </operation>
+    </file>
+
+    <!-- ________________ catalog/controller/account/register.php ________________ -->
+    <!-- _______________________ Account Info register Controller _______________________ -->
+    <!-- _________________________________________________________________________ -->
+    <file path="catalog/controller/account/register.php">
+        <operation>
+            <search><![CDATA[$this->load->language('account/register');]]></search>
+            <add position="before"><![CDATA[
+            $this->load->model('myparcelnl/helper');
+            $data['use_addition_address'] =  MyParcel($this->registry)->settings->general->use_addition_address_as_number_suffix;
+            ]]></add>
+        </operation>
+        <operation>
+            <search><![CDATA[$this->error['address_1'] = $this->language->get('error_address_1');]]></search>
+            <add position="after"><![CDATA[
+            }
+            $this->load->model('myparcelnl/helper');
+                $use_addition_address =  MyParcel($this->registry)->settings->general->use_addition_address_as_number_suffix;
+                if ($use_addition_address == 2 ) {
+                    if (empty(trim($this->request->post['address_2']))) {
+                        $this->error['address_2'] = MyParcel()->lang->get('error_address_2');
+                    }
+            ]]></add>
+        </operation>
+    </file>
+
+    <!-- ________________ catalog/view/theme/*/template/checkout/register.tpl ________________ -->
+    <!-- _______________________ Billing Info register Template _______________________ -->
+    <!-- _________________________________________________________________________ -->
+    <file path="catalog/view/theme/*/template/checkout/register.tpl">
+        <operation>
+            <search><![CDATA[<input type="text" name="address_2" value="" placeholder="<?php echo $entry_address_2; ?>" id="input-payment-address-2" class="form-control" />]]></search>
+            <add position="after"><![CDATA[
+            <?php if( !empty( $use_addition_address ) && $use_addition_address == 2 ): ?>
+            </div>
+              <div class="form-group">
+                <label class="control-label" for="input-payment-address-3">Address 3</label>
+                <input type="text" name="custom_field[address][address_3]" value="" placeholder="Address 3" id="input-payment-address-3" class="form-control" />
+            <?php endif; ?>
+             ]]></add>
+        </operation>
+    </file>
+
+    <!-- ________________ catalog/controller/checkout/register.php ________________ -->
+    <!-- _______________________ Billing Info register Controller _______________________ -->
+    <!-- _________________________________________________________________________ -->
+    <file path="catalog/controller/checkout/register.php">
+        <operation>
+            <search><![CDATA[$this->load->language('checkout/checkout');]]></search>
+            <add position="before"><![CDATA[
+            $this->load->model('myparcelnl/helper');
+            $data['use_addition_address'] =  MyParcel($this->registry)->settings->general->use_addition_address_as_number_suffix;
+            ]]></add>
+        </operation>
+        <operation>
+            <search><![CDATA[$json['error']['address_1'] = $this->language->get('error_address_1');]]></search>
+            <add position="after"><![CDATA[
+            }
+            $this->load->model('myparcelnl/helper');
+                $use_addition_address =  MyParcel($this->registry)->settings->general->use_addition_address_as_number_suffix;
+                if ($use_addition_address == 2 ) {
+                    if (empty(trim($this->request->post['address_2']))) {
+                        $json['error']['address_2'] = MyParcel()->lang->get('error_address_2');
+                    }
+            ]]></add>
+        </operation>
+    </file>
+
+    <!-- ________________ catalog/view/theme/*/template/checkout/payment_address.tpl ________________ -->
+    <!-- _______________________ Billing Info Register Template _______________________ -->
+    <!-- _________________________________________________________________________ -->
+    <file path="catalog/view/theme/*/template/checkout/payment_address.tpl">
+        <operation>
+            <search><![CDATA[<input type="text" name="address_2" value="" placeholder="<?php echo $entry_address_2; ?>" id="input-payment-address-2" class="form-control" />]]></search>
+            <add position="after"><![CDATA[
+            <?php if( !empty( $use_addition_address ) && $use_addition_address == 2 ): ?>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-payment-address-3">Address 3</label>
+            <div class="col-sm-10">
+                <input type="text" name="custom_field[address_3]" value="" placeholder="Address 3" id="input-payment-address-3" class="form-control" />
+            <?php endif; ?>
+             ]]></add>
+        </operation>
+    </file>
+
+    <!-- ________________ catalog/controller/checkout/payment_address.php ________________ -->
+    <!-- _______________________ Billing Info Payment Address Controller _______________________ -->
+    <!-- _________________________________________________________________________ -->
+    <file path="catalog/controller/checkout/payment_address.php">
+        <operation>
+            <search><![CDATA[$this->load->language('checkout/checkout');]]></search>
+            <add position="before"><![CDATA[
+            $this->load->model('myparcelnl/helper');
+            $data['use_addition_address'] =  MyParcel($this->registry)->settings->general->use_addition_address_as_number_suffix;
+            ]]></add>
+        </operation>
+        <operation>
+            <search><![CDATA[$json['error']['address_1'] = $this->language->get('error_address_1');]]></search>
+            <add position="after"><![CDATA[
+            }
+            $this->load->model('myparcelnl/helper');
+                $use_addition_address =  MyParcel($this->registry)->settings->general->use_addition_address_as_number_suffix;
+                if ($use_addition_address == 2 ) {
+                    if (empty(trim($this->request->post['address_2']))) {
+                        $json['error']['address_2'] = MyParcel()->lang->get('error_address_2');
+                    }
+            ]]></add>
+        </operation>
+        <operation>
+            <search regex="true"><![CDATA[/elseif(.*)(\r\n|\r|\n)(\s*)\$json(.*)error_address(.*)(\r\n|\r|\n)(\s*)\}/]]></search>
+            <add position="replace"><![CDATA[
+            elseif (!in_array($this->request->post['address_id'], array_keys($this->model_account_address->getAddresses()))) {
+					$json['error']['warning'] = $this->language->get('error_address');
+			}
+            elseif (in_array($this->request->post['address_id'], array_keys($this->model_account_address->getAddresses()))) {
+                $this->load->model('myparcelnl/helper');
+                $use_addition_address =  MyParcel($this->registry)->settings->general->use_addition_address_as_number_suffix;
+                if ($use_addition_address == 2 ) {
+                    $account_address = $this->model_account_address->getAddresses();
+                    $account_address = $account_address[$this->request->post['address_id']];
+                    if (empty(trim($account_address['address_2']))) {
+                        $json['error']['warning'] = MyParcel()->lang->get('error_address_2_need_edit');
+                    }
+                }
+            }
+            ]]></add>
+        </operation>
+    </file>
+
+    <!-- ________________ catalog/view/theme/*/template/checkout/shipping_address.tpl ________________ -->
+    <!-- _______________________ Shipping Info Register Template _______________________ -->
+    <!-- _________________________________________________________________________ -->
+    <file path="catalog/view/theme/*/template/checkout/shipping_address.tpl">
+        <operation>
+            <search><![CDATA[<input type="text" name="address_2" value="" placeholder="<?php echo $entry_address_2; ?>" id="input-shipping-address-2" class="form-control" />]]></search>
+            <add position="after"><![CDATA[
+            <?php if( !empty( $use_addition_address ) && $use_addition_address == 2 ): ?>
+            </div>
+    </div>
+    <div class="form-group">
+      <label class="col-sm-2 control-label" for="input-shipping-address-3">Address 3</label>
+      <div class="col-sm-10">
+        <input type="text" name="custom_field[address_3]" value="" placeholder="Address 3" id="input-shipping-address-3" class="form-control" />
+        <?php endif; ?>
+             ]]></add>
+        </operation>
+    </file>
+
+    <!-- ________________ catalog/controller/checkout/shipping_address.php ________________ -->
+    <!-- _______________________ Shipping Info Payment Address Controller _______________________ -->
+    <!-- _________________________________________________________________________ -->
+    <file path="catalog/controller/checkout/shipping_address.php">
+        <operation>
+            <search><![CDATA[$this->load->language('checkout/checkout');]]></search>
+            <add position="before"><![CDATA[
+            $this->load->model('myparcelnl/helper');
+            $data['use_addition_address'] =  MyParcel($this->registry)->settings->general->use_addition_address_as_number_suffix;
+            ]]></add>
+        </operation>
+        <operation>
+            <search><![CDATA[$json['error']['address_1'] = $this->language->get('error_address_1');]]></search>
+            <add position="after"><![CDATA[
+            }
+            $this->load->model('myparcelnl/helper');
+                $use_addition_address =  MyParcel($this->registry)->settings->general->use_addition_address_as_number_suffix;
+                if ($use_addition_address == 2 ) {
+                    if (empty(trim($this->request->post['address_2']))) {
+                        $json['error']['address_2'] = MyParcel()->lang->get('error_address_2');
+                    }
+            ]]></add>
+        </operation>
+        <operation>
+            <search regex="true"><![CDATA[/elseif(.*)(\r\n|\r|\n)(\s*)\$json(.*)error_address(.*)(\r\n|\r|\n)(\s*)\}/]]></search>
+            <add position="replace"><![CDATA[
+            elseif (!in_array($this->request->post['address_id'], array_keys($this->model_account_address->getAddresses()))) {
+				$json['error']['warning'] = $this->language->get('error_address');
+			}
+            elseif (in_array($this->request->post['address_id'], array_keys($this->model_account_address->getAddresses()))) {
+                $this->load->model('myparcelnl/helper');
+                $use_addition_address =  MyParcel($this->registry)->settings->general->use_addition_address_as_number_suffix;
+                if ($use_addition_address == 2 ) {
+                    $account_address = $this->model_account_address->getAddresses();
+                    $account_address = $account_address[$this->request->post['address_id']];
+                    if (empty(trim($account_address['address_2']))) {
+                        $json['error']['warning'] = MyParcel()->lang->get('error_address_2_need_edit');
+                    }
+                }
+            }
+            ]]></add>
+        </operation>
+    </file>
+
+    <!-- ________________ catalog/view/theme/*/template/account/address_form.tpl ________________ -->
+    <!-- _______________________ Billing Info Register Template _______________________ -->
+    <!-- _________________________________________________________________________ -->
+    <file path="catalog/view/theme/*/template/account/address_form.tpl">
+        <operation>
+            <search regex="true"><![CDATA[/<input type="text" name="address_2" value="<?php echo $address_2; ?>" placeholder="<?php echo $entry_address_2; ?>" id="input-address-2" class="form-control"(.*?)\/>/]]></search>
+            <add><![CDATA[
+            <input type="text" name="address_2" value="<?php echo $address_2; ?>" placeholder="<?php echo $entry_address_2; ?>" id="input-address-2" class="form-control"/>
+            <?php if( !empty( $use_addition_address ) && $use_addition_address == 2 ): ?>
+            </div>
+        </div>
+       <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-address-2">Address 3</label>
+            <div class="col-sm-10">
+              <input type="text" name="custom_field[address_3]" value="<?php echo $address_custom_field['address_3']; ?>" placeholder="Address 3" id="input-address-3" class="form-control" />
+            <?php endif; ?>
+             ]]></add>
+        </operation>
+    </file>
+
+    <!-- ________________ catalog/controller/account/address.php ________________ -->
+    <!-- _______________________ Billing Info Payment Address Controller _______________________ -->
+    <!-- _________________________________________________________________________ -->
+    <file path="catalog/controller/account/address.php">
+        <operation>
+            <search><![CDATA[$data['breadcrumbs'] = array();]]></search>
+            <add position="after"><![CDATA[
+            $this->load->model('myparcelnl/helper');
+            $data['use_addition_address'] =  MyParcel($this->registry)->settings->general->use_addition_address_as_number_suffix;
             ]]></add>
         </operation>
     </file>
@@ -486,6 +875,72 @@
                         'children' => null
                     );
                 }
+                /* MyParcel Ocmod End */
+            ]]></add>
+        </operation>
+    </file>
+
+    <!-- ________________ MODIFY TOTAL TAX ________________ -->
+    <!-- _________ ADD SHIPPING TAX TO TOTAL OF TAX _______ -->
+    <!-- __________________________________________________ -->
+    <file path="catalog/model/extension/total/tax.php">
+        <operation>
+            <search><![CDATA[if ($value > 0) {]]></search>
+            <add position="after"><![CDATA[
+            /* MyParcel Ocmod Start */
+            $tax = 0;
+            if (!empty($this->session->data['myparcel']['data'])) {
+                /** @var MyParcel_Shipment_Checkout $checkout_helper * */
+                $this->load->model('myparcelnl/helper');
+                $checkout_helper = MyParcel($this->registry)->shipment->checkout;
+                $helper = MyParcel()->helper;
+                $data = $this->session->data['myparcel'];
+
+                if ((is_array($data['data']) && count($data['data'])) || (!is_array($data['data']) && count(json_decode(html_entity_decode($data['data']), true)))) {
+                    $total_array = $checkout_helper->getTotalArray($data, false, null, '', false);
+                    $total_price_without_tax = 0;
+
+                    foreach ($total_array as $total_code => $total_item) {
+                        $total_price_without_tax += $total_item['price'];
+                    }
+                    //get tax
+                    $currentTax =$helper->getTaxRate($key);
+                    if($currentTax !== false){
+                        switch ($currentTax['type']){
+                            case 'P' :
+                                $tax = $total_price_without_tax * ($currentTax['rate']/100);
+                                break;
+                            case 'F':
+                                $tax = $currentTax['rate'];
+                                break;
+                        }
+                    }
+                }
+            }
+            $value += $tax;
+            /* MyParcel Ocmod End */
+            ]]></add>
+        </operation>
+    </file>
+
+    <file path="system/library/url.php">
+        <operation>
+            <search><![CDATA[$url .= 'index.php?route=' . $route;]]></search>
+            <add position="after"><![CDATA[
+                 /* MyParcel Ocmod Start */
+                 if ($args) {
+                    if (is_array($args)) {
+                        $url .= '&amp;' . http_build_query($args);
+                    } else {
+                        $url .= str_replace('&', '&amp;', '&' . ltrim($args, '&'));
+                    }
+                }
+
+                foreach ($this->rewrite as $rewrite) {
+                    $url = $rewrite->rewrite($url);
+                }
+
+                return $url;
                 /* MyParcel Ocmod End */
             ]]></add>
         </operation>

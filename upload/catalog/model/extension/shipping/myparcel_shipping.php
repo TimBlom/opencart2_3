@@ -3,7 +3,8 @@ class ModelExtensionShippingMyparcelShipping extends Model {
 	function getQuote($address) {
 
         $checkout_settings          = $this->config->get('myparcelnl_fields_checkout');
-		$status = !empty($this->config->get('myparcel_shipping_status')) ? true : false;
+        $status_config = $this->config->get('myparcel_shipping_status');
+		$status = !empty($status_config) ? true : false;
         $belgium_enabled = !empty($checkout_settings['belgium_enabled']) ? true : false;
 		$country_iso_code = isset($address['iso_code_2']) ? $address['iso_code_2'] : null;
 
@@ -28,7 +29,7 @@ class ModelExtensionShippingMyparcelShipping extends Model {
 
 				$checkout_helper = MyParcel()->shipment->checkout;
 				$checkout_helper->setSessionOrderDeliveryOptions($this->session->data['myparcel_order_id']);
-				$data = $this->session->data['myparcel'];
+				$data = isset($this->session->data['myparcel']) ? $this->session->data['myparcel'] : false;
 
 				if ($data) {
 					$total_array = $checkout_helper->getTotalArray($data);

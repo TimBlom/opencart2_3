@@ -1,10 +1,10 @@
 <?php
 // Heading
-$_['heading_title']       = 'Myparcel NL v1.0.9';
-
+$heading_title = 'Myparcel NL v1.1.9';
+$_['heading_title'] = $heading_title;
 // Text
 $_['text_module']         = 'Modules';
-$_['text_success']        = 'Success: You have modified module ' . $_['heading_title'] . '!';
+$_['text_success']        = 'Success: You have modified module ' . $heading_title . '!';
 $_['text_content_top']    = 'Content Top';
 $_['text_content_bottom'] = 'Content Bottom';
 $_['text_column_left']    = 'Column Left';
@@ -24,11 +24,14 @@ $_['entry_title_package_types']         = 'Package Types';
 $_['entry_title_button_export']         = 'Export to MyParcel';
 $_['entry_title_button_print']          = 'Print MyParcel label';
 $_['entry_title_button_return']         = 'Email return label';
+$_['entry_title_choose_position_label'] = 'Choose position label print';
 $_['entry_mailbox'] = 'Mailbox';
 $_['entry_delivery_type'] = 'Package Type';
 
 $_['entry_tab_1_api']                      = 'API';
 $_['entry_tab_1_api_setting']              = 'API settings';
+$_['entry_tab_1_system_setting']           = 'System settings';
+$_['entry_tab_1_admin_folder']             = 'Admin folder';
 $_['entry_tab_1_generel_setting']          = 'General settings';
 $_['entry_tab_1_label_display']            = 'Label display';
 $_['entry_tab_1_radio_download_pdf']       = 'Download PDF';
@@ -45,10 +48,15 @@ Make sure Process shipments directly is enabled when you use this option togethe
 $_['entry_tab_1_automatic_order_status'] = 'Automatic order status';
 $_['entry_tab_1_keep_old_shipments'] = 'Keep old shipments';
 $_['entry_tab_1_checkbox_keep_old_shipments'] = 'With this option enabled, data from previous shipments (track & trace links) will be kept in the order when you export more than once.';
+$_['entry_tab_1_label_use_addition_address_as_number_suffix'] = 'Use addition address as number suffix';
+$_['entry_tab_1_checkbox_use_address1_and_address2'] = "'Address field 1' and  'address field 2' will both be used for the full address";
+$_['entry_tab_1_checkbox_use_address2_as_number_suffix'] = 'With this option enabled, value inputted in address 2 will be considered as number suffix in the customer address';
 $_['entry_tab_1_diagnostic_tools'] = 'Diagnostic tools';
 $_['entry_tab_1_log_api_communication'] = 'Log API communication';
 $_['entry_tab_1_checkbox_log_api_communication'] = 'Only enable this option when debugging!';
 $_['entry_tab_1_download_log_file'] = 'Download log file';
+$_['entry_tab_1_checkbox_use_address3_as_number_suffix'] = 'With this option enabled, value inputted in address 3 will be considered as number suffix in the customer address';
+
 
 $_['entry_tab_2_title_export_settings'] = 'Default export settings';
 $_['entry_tab_2_title_package_types']   = 'Package Types';
@@ -78,6 +86,9 @@ $_['entry_tab_2_select_insured_up_to_50']  = 'Insured up to &euro; 50 (+ &euro; 
 $_['entry_tab_2_select_insured_up_to_250'] = 'Insured up to &euro; 250 (+ &euro; 1.00)';
 $_['entry_tab_2_select_insured_up_to_500'] = 'Insured up to &euro; 500 (+ &euro; 1.65)';
 $_['entry_tab_2_select_insured_500']       = '> &euro; 500 insured (+ &euro; 1.65 / &euro; 500)';
+$_['entry_tab_2_title_age_check']       = 'Age check';
+$_['entry_tab_2_title_age_check_desrition']       = 'The recipient must sign for the package and must be at least 18 years old.';
+
 
 $_['entry_tab_3_title_delivery_option']                = 'Delivery options';
 $_['entry_tab_3_label_enable_delivery']                = 'Enable MyParcel delivery options';
@@ -195,16 +206,17 @@ $_['entry_order_myparcel_text_extra_large_size'] = 'Extra large size';
 $_['entry_order_myparcel_text_home_address_only'] = 'Home address only';
 $_['entry_order_myparcel_text_signature_on_delivery'] = 'Signature on delivery';
 $_['entry_order_myparcel_text_return_if_no_answer']  = 'Return if no answer';
+$_['entry_order_myparcel_text_age_check']  = 'Age check';
 $_['entry_order_myparcel_text_insured_home'] = 'Insured + home address only + signature on delivery';
 $_['entry_order_myparcel_text_standar_insurance'] = 'Standard insurance up to €500 + signature on delivery';
 $_['entry_order_myparcel_text_insurance'] = 'Insurance';
 $_['entry_order_myparcel_text_insurance_amount'] = 'Insurance amount';
 
 // Error
-$_['error_permission']    = 'Warning: You do not have permission to modify module ' . $_['heading_title'];
+$_['error_permission']    = 'Warning: You do not have permission to modify module ' . $heading_title;
 $_['error_code']          = 'Code Required';
 // Error
-$_['error_permission']      = 'Warning: You do not have permission to modify module ' . $_['heading_title'];
+$_['error_permission']      = 'Warning: You do not have permission to modify module ' . $heading_title;
 $_['error_selected_orders_not_exported_yet'] = 'The selected orders have not been exported to MyParcel yet!';
 $_['error_unknown_response'] = 'Unknown error, API response:';
 $_['error_unknown'] = 'Unknown error';

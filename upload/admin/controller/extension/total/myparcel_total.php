@@ -84,8 +84,12 @@ class ControllerExtensionTotalMyparcelTotal extends Controller {
 		$data['header'] = $this->load->controller('common/header');
 		$data['column_left'] = $this->load->controller('common/column_left');
 		$data['footer'] = $this->load->controller('common/footer');
+        if (version_compare(VERSION, '2.2.2.0', '>=')) {
+            $this->response->setOutput($this->load->view(MyParcel()->getTotalPath() . 'myparcel_total', $data));
+        } else {
+            $this->response->setOutput($this->load->view(MyParcel()->getTotalPath() . 'myparcel_total.tpl', $data));
+        }
 
-		$this->response->setOutput($this->load->view(MyParcel()->getTotalPath() . 'myparcel_total', $data));
 	}
 
 	function validate()

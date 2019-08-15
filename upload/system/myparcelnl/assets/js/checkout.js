@@ -29,6 +29,13 @@ var MYPARCEL_CHECKOUT = MYPARCEL_CHECKOUT || {};
                     return true;
                 }
 
+                // For journal theme
+                if (settings.url.indexOf('route=journal2/checkout/shipping') > 0) {
+                    $("#myparcel-iframe").css({'height': '650px'});
+                    var a = MYPARCEL_CHECKOUT.activateIframe();
+                    return true;
+                }
+
                 if (
                     settings.url.indexOf('checkout/shipping_address') >= 0
                     ||
@@ -127,10 +134,12 @@ var MYPARCEL_CHECKOUT = MYPARCEL_CHECKOUT || {};
             $(document).on('change', 'input[name="shipping_method"]', function() {
 
                 if (!MYPARCEL_CHECKOUT.isActive()) {
+                    $('#button-shipping-method').prop('disabled', false);
                     return true;
                 }
 
                 if (typeof iframeWindow === 'undefined' || !iframeWindow) {
+                    $('#button-shipping-method').prop('disabled', false);
                     return true;
                 }
 
@@ -145,8 +154,17 @@ var MYPARCEL_CHECKOUT = MYPARCEL_CHECKOUT || {};
                         iframeWindow.myparcel_variable.activateForm();
                     }
                 }
+
+                if (shipping_method_quote !== 'myparcel_shipping.myparcel_shipping') {
+                    $('#button-shipping-method').prop('disabled', false);
+                }
             });
 
+            $(document).on('change', '#mypa-input', function() {
+                if ($(this).val()) {
+                    $('#button-shipping-method').prop('disabled', false);
+                }
+            });
             /**
              * [Event Click]
              * Executed when user click on "Details" button in checkout confirm step
@@ -171,7 +189,11 @@ var MYPARCEL_CHECKOUT = MYPARCEL_CHECKOUT || {};
                         },
                         success: function (res) {
                             if (res.status == 'success') {
-                                $('.button-myparcel-total-details').closest('tr').after(res.html);
+                                button.closest('tr').after(res.html);
+                                // For journal theme
+                                if (button.parents('.cart-wrapper').length > 0) {
+                                    button.closest('tbody').find('.myparcel-total td:first').removeAttr('colspan');
+                                }
                             }
                         },
                         complete: function () {
@@ -285,7 +307,6 @@ var MYPARCEL_CHECKOUT = MYPARCEL_CHECKOUT || {};
     {
         $("input[name='shipping_address']").prop('disabled', true);
         $('#shipping-existing select').prop('disabled', true);
-        //$('#button-shipping-address').prop('disabled', true);
     };
 
     MYPARCEL_CHECKOUT.loadingComplete = function()
@@ -293,13 +314,22 @@ var MYPARCEL_CHECKOUT = MYPARCEL_CHECKOUT || {};
         $("input[name='shipping_address']").prop('disabled', false);
         $('#shipping-existing select').prop('disabled', false);
         $('.parcel-shipping-method').prop('checked', true);
-        //$('#button-shipping-address').prop('disabled', false);
+
+        /*
+        * Fix delivery options height in mobile
+        * */
+        var w = window.innerWidth;
+        if (w < 407) {
+            console.log(w);
+            $('#myparcel-iframe').attr('height', 460);
+        }
     };
 
     MYPARCEL_CHECKOUT.eventActivated = function()
     {
         $('.parcel-shipping-method').prop('checked', true);
         $('#myparcel-iframe').attr('height', 450);
+        $('#button-shipping-method').prop('disabled', false);
     };
 
     MYPARCEL_CHECKOUT.eventDeactivated = function()
@@ -326,6 +356,8 @@ var MYPARCEL_CHECKOUT = MYPARCEL_CHECKOUT || {};
             return false;
         }
 
+        $('#button-shipping-method').prop('disabled', true);
+
         iframeWindow = el.contentWindow;
 
         $(el).on('load', function() {
@@ -345,11 +377,24 @@ var MYPARCEL_CHECKOUT = MYPARCEL_CHECKOUT || {};
             $('#delivery-options-wrapper').data('loaded', true);
         });
 
+        // journal2 theme guest checkout
+        var data = {};
+        var currentTheme = window.myparcel_current_theme;//$(".journal-checkout").length;
+        if (currentTheme == 'journal2') {
+            if($('input[name="account"]').is(":checked") && ($('input[name="account"]:checked').val() == 'guest' || $('input[name="account"]:checked').val() == 'register')) {
+                var type = $('input[name="shipping_address"]').is(":checked") ? 'payment' : 'shipping';
+                data.address_1 = $('input[name="' + type + '_address_1"]').val();
+                data.address_2 = $('input[name="' + type + '_address_2"]').val();
+                data.city = $('input[name="' + type + '_city"]').val();
+            }
+        }
+
         // Retrieve address from session
-        $.ajax({
+        return $.ajax({
             url: window.myparcel_ajax_get_address_from_session_url,
             type: 'POST',
             dataType: 'json',
+            data: data,
             beforeSend: function() {
                 $('#myparcel-iframe').before('<p>' + window.entry_loading + '</p>');
                 $('#delivery-options-wrapper').hide();
@@ -374,8 +419,52 @@ var MYPARCEL_CHECKOUT = MYPARCEL_CHECKOUT || {};
         });
     };
 
+    MYPARCEL_CHECKOUT.journalThemeEventActivated = function () {
+        var currentTheme = window.myparcel_current_theme;//$(".journal-checkout").length;
+        if (currentTheme == 'journal2') {
+            $.ajax({
+                cache: false,
+                url: 'index.php?route=journal2/checkout/save',
+                type: 'post',
+                data: $('.parcel-shipping-method, #mypa-input, #mypa-signed:checked, #mypa-recipient-only:checked'),
+                dataType: 'json',
+                success: function () {
+                    $.ajax({
+                        cache: false,
+                        url: 'index.php?route=journal2/checkout/cart_update',
+                        type: 'post',
+                        dataType: 'json',
+                        success: function (json) {
+                            setTimeout(function () {
+                                $('#cart-total').html(json['total']);
+                            }, 100);
+
+                            $('#cart ul').load('index.php?route=common/cart/info ul li');
+                        }
+                    });
+                    $(document).trigger('journal_checkout_reload_payment');
+                    $(document).trigger('journal_checkout_reload_cart');
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.error && console.error(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+                }
+            });
+        }
+    }
+
     $(document).ready(function ($) {
         MYPARCEL_CHECKOUT.initialize.onReady();
+
+        $(document).delegate('input[name*="address_1"], input[name*="address_2"]', 'change', function () {
+            var $this = $('input[name="shipping_address"]');
+
+            if ($this.is(':checked')) {
+                $(document).trigger('journal_checkout_address_changed', 'payment');
+            } else {
+                $(document).trigger('journal_checkout_address_changed', 'payment');
+                $(document).trigger('journal_checkout_address_changed', 'shipping');
+            }
+        });
     });
 
     window.mypaLoaded = function() {
