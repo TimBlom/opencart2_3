@@ -26,7 +26,7 @@
             ]]></add>
         </operation>
 
-		<operation>
+        <operation>
             <search regex="true"><![CDATA[/<td(.*)\$order\['date_modified'](.*)<\/td>/]]></search>
             <add><![CDATA[
                 <td$1$order['date_modified']$2</td>
@@ -147,9 +147,9 @@
     <!-- ****** ORDER CONTROLLER ADMIN/SALE/ORDER.PHP ****** -->
     <!-- *************************************************** -->
 
-	<file path="admin/controller/sale/order.php"><!-- checked -->
+    <file path="admin/controller/sale/order.php"><!-- checked -->
         <!-- 1X -->
-		<operation><!-- yes -->
+        <operation><!-- yes -->
             <search><![CDATA[
             public function index() {
             ]]></search>
@@ -196,7 +196,7 @@
             ]]></add>
         </operation>
 
-		<operation><!-- no -->
+        <operation><!-- no -->
             <search regex="true"><![CDATA[/\$data\['column_action'](.*);/]]></search>
             <add><![CDATA[
                 $data['column_action']$1;
@@ -259,17 +259,17 @@
     <!-- ************************************************************************* -->
 
     <file path="admin/controller/common/header.php"><!-- checked -->
-    <operation><!-- yes -->
-        <search><![CDATA[
+        <operation><!-- yes -->
+            <search><![CDATA[
             public function index() {
             ]]></search>
-        <add position="after"><![CDATA[
+            <add position="after"><![CDATA[
                 /* MyParcel Ocmod Start */
                     $this->load->model('myparcelnl/helper');
                     $data['myparcel_order_header'] = $this->model_myparcelnl_helper->getContent('myparcel_order_header');
                 /* MyParcel Ocmod End */
             ]]></add>
-    </operation>
+        </operation>
     </file>
 
     <!-- ****** CATALOG COMMON HEADER CONTROLLER CATALOG/CONTROLLER/COMMON/HEADER.PHP ****** -->
@@ -301,6 +301,17 @@
                 $data['tracktrace'] = $this->model_myparcelnl_helper->getContent('myparcel_email_tracktrace', array('order_id' => $order_id));
             ]]></add>
         </operation>
+        <operation><!-- no -->
+            <search><![CDATA[$text .= $language->get('text_new_footer') . "\n\n";]]></search>
+            <add position="after"><![CDATA[
+                $this->load->model('myparcelnl/shipment');
+                $myparcel_delivery_options = $this->model_myparcelnl_shipment->getMyParcelDeliveryOptions($order_id);
+                if(isset($myparcel_delivery_options['location'])){
+					$data['text_pickup_location'] = 'Pickup Location';
+					$data['pickup_location'] = implode("<br>", array($myparcel_delivery_options['location'],$myparcel_delivery_options['street'] . ' ' . $myparcel_delivery_options['number'], $myparcel_delivery_options['city'] . ' (' . $myparcel_delivery_options['distance'] . 'm)'));
+                }
+            ]]></add>
+        </operation>
     </file>
 
     <file path="catalog/view/theme/*/template/mail/order.tpl"><!-- checked -->
@@ -309,6 +320,22 @@
             <add><![CDATA[
                 <?php echo $download; ?>">$1<?php } ?>
                 <?php if(!empty($tracktrace)){echo '<p>'.$tracktrace['text'].' '.implode(', ', $tracktrace['code']).'</p>';}  ?>
+            ]]></add>
+        </operation>
+        <operation><!-- no -->
+            <search><![CDATA[<td style="font-size: 12px; border-right: 1px solid #DDDDDD; border-bottom: 1px solid #DDDDDD; background-color: #EFEFEF; font-weight: bold; text-align: left; padding: 7px; color: #222222;"><?php echo $text_shipping_address; ?></td>]]></search>
+            <add position="after"><![CDATA[
+                <?php if (isset($pickup_location)) { ?>
+                <td style="font-size: 12px; border-right: 1px solid #DDDDDD; border-bottom: 1px solid #DDDDDD; background-color: #EFEFEF; font-weight: bold; text-align: left; padding: 7px; color: #222222;"><?php echo $text_pickup_location; ?></td>
+                <?php } ?>
+            ]]></add>
+        </operation>
+        <operation><!-- no -->
+            <search><![CDATA[<td style="font-size: 12px;	border-right: 1px solid #DDDDDD; border-bottom: 1px solid #DDDDDD; text-align: left; padding: 7px;"><?php echo $shipping_address; ?></td>]]></search>
+            <add position="after"><![CDATA[
+                <?php if (isset($pickup_location)) { ?>
+                <td style="font-size: 12px;	border-right: 1px solid #DDDDDD; border-bottom: 1px solid #DDDDDD; text-align: left; padding: 7px;"><?php echo $pickup_location; ?></td>
+                <?php } ?>
             ]]></add>
         </operation>
     </file>
@@ -885,41 +912,40 @@
     <!-- __________________________________________________ -->
     <file path="catalog/model/extension/total/tax.php">
         <operation>
-            <search><![CDATA[public function getTotal($total) {]]></search>
+            <search><![CDATA[if ($value > 0) {]]></search>
             <add position="after"><![CDATA[
-                /* MyParcel Ocmod Start */
-                $tax = 0;
-                if (!empty($this->session->data['myparcel']['data'])) {
-                    /** @var MyParcel_Shipment_Checkout $checkout_helper * */
-                    $this->load->model('myparcelnl/helper');
-                    $checkout_helper = MyParcel($this->registry)->shipment->checkout;
-                    $data = $this->session->data['myparcel'];
+            /* MyParcel Ocmod Start */
+            $tax = 0;
+            if (!empty($this->session->data['myparcel']['data'])) {
+                /** @var MyParcel_Shipment_Checkout $checkout_helper * */
+                $this->load->model('myparcelnl/helper');
+                $checkout_helper = MyParcel($this->registry)->shipment->checkout;
+                $helper = MyParcel()->helper;
+                $data = $this->session->data['myparcel'];
 
-                    $total_array = $checkout_helper->getTotalArray($data, false, null, '', true);
-                    $total_price = 0;
-
-                    foreach ($total_array as $total_code => $total_item) {
-                        $total_price += $total_item['price'];
-                    }
-
+                if ((is_array($data['data']) && count($data['data'])) || (!is_array($data['data']) && count(json_decode(html_entity_decode($data['data']), true)))) {
                     $total_array = $checkout_helper->getTotalArray($data, false, null, '', false);
                     $total_price_without_tax = 0;
 
                     foreach ($total_array as $total_code => $total_item) {
                         $total_price_without_tax += $total_item['price'];
                     }
-
-                    $tax = max($total_price - $total_price_without_tax, 0);
+                    //get tax
+                    $currentTax =$helper->getTaxRate($key);
+                    if($currentTax !== false){
+                        switch ($currentTax['type']){
+                            case 'P' :
+                                $tax = $total_price_without_tax * ($currentTax['rate']/100);
+                                break;
+                            case 'F':
+                                $tax = $currentTax['rate'];
+                                break;
+                        }
+                    }
                 }
-                /* MyParcel Ocmod End */
-            ]]></add>
-        </operation>
-        <operation>
-            <search><![CDATA[if ($value > 0) {]]></search>
-            <add position="after"><![CDATA[
-                /* MyParcel Ocmod Start */
-                $value += $tax;
-                /* MyParcel Ocmod End */
+            }
+            $value += $tax;
+            /* MyParcel Ocmod End */
             ]]></add>
         </operation>
     </file>
